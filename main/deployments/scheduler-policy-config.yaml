@@ -1,0 +1,31 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: sfc-controller-config
+  namespace: kube-system
+data:
+  policy.cfg: |
+    {
+        "kind" : "Policy",
+        "apiVersion" : "v1",
+        "metadata" : {
+            "name": "sfc-controller-config",
+            "namespace": "kube-system"
+        },
+        "predicates" : [
+            {"name" : "PodFitsResources"},
+            {"name" : "PodFitsHostPorts"},
+            {"name" : "NoDiskConflict"},
+            {"name" : "NoVolumeZoneConflict"},
+            {"name" : "PodToleratesNodeTaints"},
+            {"name" : "MatchInterPodAffinity"}
+        ],
+        "extenders": [
+            {
+                "urlPrefix": "http://127.0.0.1:8100",
+                "apiVersion": "v1",
+                "filterVerb": "filter",
+                "enableHttps": false
+            }
+        ]
+    }

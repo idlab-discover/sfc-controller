@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-for-sfc-controller
+  labels:
+    name: multischeduler-example
+spec:
+  schedulerName: sfc-controller
+  containers:
+  - name: pod-for-sfc-controller
+    image: k8s.gcr.io/pause:2.0

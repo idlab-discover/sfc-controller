@@ -1,0 +1,61 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    component: scheduler
+    tier: control-plane
+  name: sfc-controller
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      component: scheduler
+      tier: control-plane
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: scheduler
+        tier: control-plane
+        version: second
+    spec:
+      tolerations:
+      - key: "function"
+        operator: "Equal"
+        value: "master"
+        effect: "NoSchedule"
+      serviceAccountName: sfc-controller
+      containers:
+      - name: sfc-controller
+        image: jpedro1992/sfc-controller:0.0.1
+        ports:
+        - containerPort: 8100
+      - name: kube-scheduler
+        image: mirrorgooglecontainers/kube-scheduler:v1.12.3-beta.0
+        command:
+        - /usr/local/bin/kube-scheduler
+        - --address=0.0.0.0
+        - --leader-elect=false
+        - --scheduler-name=sfc-controller
+        - --policy-configmap=sfc-controller-config
+        - --policy-configmap-namespace=kube-system
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 10251
+          initialDelaySeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 10251
+        resources:
+          requests:
+            cpu: '0.1'
+        securityContext:
+          privileged: false
+        volumeMounts: []
+      hostNetwork: false
+      hostPID: false
+
+      
+      
