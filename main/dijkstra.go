@@ -13,6 +13,7 @@ A trivial example of a graph definition is:
 	}
 
 */
+
 package main
 
 import "fmt"
@@ -22,7 +23,7 @@ type node struct {
 	cost int
 }
 
-// Graph is a rappresentation of how the points in our graph are connected
+// Graph is a representation of how the points in our graph are connected
 // between each other
 type Graph map[string]map[string]int
 
@@ -103,7 +104,7 @@ func (g Graph) Path(start, target string) (path []string, cost int, err error) {
 	// add the origin at the end of the path
 	path = append(path, start)
 
-	// reverse the path because it was popilated
+	// reverse the path because it was populated
 	// in reverse, form target to start
 	for i, j := 0, len(path)-1; i < j; i, j = i+1, j-1 {
 		path[i], path[j] = path[j], path[i]

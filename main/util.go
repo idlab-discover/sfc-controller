@@ -2,47 +2,46 @@ package main
 
 import (
 	"fmt"
-	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	//"k8s.io/client-go/kubernetes"
-	//"k8s.io/client-go/rest"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	//_ "k8s.io/apimachinery/pkg/version"
+	//_ "k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	k8sApi "k8s.io/kubernetes/pkg/api"
 	"math"
 	"strconv"
 	"strings"
-
-	//schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
-	//utilfeature "k8s.io/apiserver/pkg/util/feature"
-	//"k8s.io/kubernetes/pkg/features"
-	//schedulerapi "k8s.io/kubernetes/pkg/scheduler/api"
 )
 
 var id = 0
 var serviceHash = make(map[string]string)
 
+// initial infrastructure Graph
 var graphLatency = Graph{
-	"work1.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 	{"Bruges": 3.0},
-	"work2.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 	{"Bruges": 3.0},
-	"work3.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 	{"Bruges": 5.0},
-	"Bruges": 	{"work1.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 3.0, "work2.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 3.0, "work3.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 5.0,"Ghent": 15.0},
-	"work4.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be":		{"Ghent": 3.0},
-	"work5.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	{"Ghent": 5.0},
-	"work6.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	{"Ghent": 3.0},
-	"Ghent": 	{"work4.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 3.0, "work5.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 5.0, "work6.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 3.0, "Bruges": 15.0 ,"Brussels": 25.0},
-	"work7.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	{"Leuven": 3.0},
-	"work8.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	{"Leuven": 3.0},
-	"work9.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	{"Leuven": 5.0},
-	"Brussels": 	{"work13.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 1.0, "work14.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 1.0, "master0.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 1.0, "Leuven": 25.0,"Ghent": 25.0},
-	"work13.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	{"Brussels": 1.0},
-	"work14.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	{"Brussels": 1.0},
-	"master0.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 	{"Brussels": 1.0},
-	"Leuven": 	{"work7.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 3.0, "work8.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 3.0, "work9.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 5.0, "Brussels": 25.0, "Antwerp": 15.0},
-	"work10.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	{"Antwerp": 3.0},
-	"work11.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	{"Antwerp": 3.0},
-	"work12.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	{"Antwerp": 3.0},
-	"Antwerp": 	{"work10.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 3.0, "work11.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 3.0, "work12.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 3.0, "Leuven": 15.0},
+	"docker-desktop": {"Bruges": 5.0},
+	"work1.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": {"Bruges": 3.0},
+	"work2.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": {"Bruges": 3.0},
+	"work3.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": {"Bruges": 5.0},
+	"Bruges": {"work1.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 3.0, "work2.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 3.0, "work3.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 5.0, "Ghent": 15.0},
+	"work4.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": {"Ghent": 3.0},
+	"work5.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": {"Ghent": 5.0},
+	"work6.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": {"Ghent": 3.0},
+	"Ghent": {"work4.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 3.0, "work5.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 5.0, "work6.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 3.0, "Bruges": 15.0, "Brussels": 25.0},
+	"work7.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": {"Leuven": 3.0},
+	"work8.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": {"Leuven": 3.0},
+	"work9.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": {"Leuven": 5.0},
+	"Brussels": {"work13.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 1.0, "work14.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 1.0, "master0.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 1.0, "Leuven": 25.0, "Ghent": 25.0},
+	"work13.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be":  {"Brussels": 1.0},
+	"work14.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be":  {"Brussels": 1.0},
+	"master0.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": {"Brussels": 1.0},
+	"Leuven": {"work7.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 3.0, "work8.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 3.0, "work9.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 5.0, "Brussels": 25.0, "Antwerp": 15.0},
+	"work10.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": {"Antwerp": 3.0},
+	"work11.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": {"Antwerp": 3.0},
+	"work12.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": {"Antwerp": 3.0},
+	"Antwerp": {"work10.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 3.0, "work11.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 3.0, "work12.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 3.0, "Leuven": 15.0},
 }
 
-// logNodes prints a line for every node.
+// logNodes prints a line for every candidate node.
 func logNodes(nodes *k8sApi.NodeList) {
 	fmt.Printf("---------------New Scheduling request------------\n")
 	for _, n := range nodes.Items {
@@ -78,10 +77,12 @@ func getDesiredFromLabels(pod *k8sApi.Pod, label string) string {
 	return "Any"
 }
 
-func addService(key string, node k8sApi.Node){
+// add service Hash
+func addService(key string, node k8sApi.Node) {
 	serviceHash[key] = node.Name
 	fmt.Printf("Service Hash Added: Key %v  - Value %v \n", key, serviceHash[key])
 }
+
 // selectNode
 func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) {
 
@@ -109,15 +110,16 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 
 	nextApp := ""
 	prevApp := ""
-	appList := []string{}
+	var appList []string
 
-	if chainPos == 1{
+	// find next and previous services in the service chain
+	if chainPos == 1 {
 		nextApp = getDesiredFromLabels(pod, "nextService")
-		appList= []string{nextApp}
-	} else if chainPos == totalChainServ{
+		appList = []string{nextApp}
+	} else if chainPos == totalChainServ {
 		prevApp = getDesiredFromLabels(pod, "prevService")
 		appList = []string{prevApp}
-	} else{
+	} else {
 		prevApp = getDesiredFromLabels(pod, "prevService")
 		nextApp = getDesiredFromLabels(pod, "nextService")
 		appList = []string{prevApp, nextApp}
@@ -133,12 +135,23 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 	fmt.Printf("Pod Desired location: %v \n", targetLocation)
 	fmt.Printf("Pod Desired bandwidth: %v (Mi)\n", podMinBandwith)
 	//fmt.Printf("Pod Desired Device Type: %v \n", deviceType)
-	fmt.Printf("Policy: %v \n", policy)
+	fmt.Printf("Scheduling Policy: %v \n", policy)
 	fmt.Printf("prevApp: %v \n", prevApp)
 	fmt.Printf("nextApp: %v \n", nextApp)
-	fmt.Printf("appList: %v \n", appList)
+	fmt.Printf("Service Chain: %v \n", appList)
 
-	 if policy == "Location" { // Location Policy
+	// creates the in-cluster config
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		panic(err.Error())
+	}
+	// creates the clientset
+	client, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	if policy == "Location" { // If Location Policy enabled
 
 		fmt.Printf("--------------------------------------------------------------\n")
 		fmt.Printf("---------------------Location Policy Selected ------------------\n")
@@ -147,7 +160,7 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 		minDelay := getMinDelay(nodes, targetLocation)
 		node := locationSelection(nodes, minDelay, targetLocation, podMinBandwith)
 
-		if node.GetName() == "" {
+		if node.GetName() == "" { // No suitable node found
 			return nil, fmt.Errorf("No suitable node for target Location with enough bandwidth!")
 		} else {
 			// add pod to Service Hash
@@ -155,12 +168,24 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 			addService(getKey(id, appName, nsh, chainPos, totalChainServ), node)
 
 			// update Link bandwidth
-			value := getNodeBandwidth(node) - podMinBandwith
-			updateNodeBandwidth(value,node)
+			nodeBand := getBandwidthValue(&node, "avBandwidth")
+			value := nodeBand - podMinBandwith
+			label := strconv.FormatFloat(value, 'f', 2, 64)
+			print(label)
+
+			nodeLabel := map[string]string{}
+			nodeLabel["avBandwidth"] = label
+
+			err = updateBandwidthLabel(nodeLabel, client) // &node, "kubernetes.io/hostname")
+			if err != nil {
+				fmt.Printf("Encountered error when updating label: %v", err)
+			}
+
+			//updateNodeBandwidth(value,node)
 			return []k8sApi.Node{node}, nil
 		}
 
-	} else if policy == "Latency" { // Latency Policy
+	} else if policy == "Latency" { // If Latency Policy enabled
 		fmt.Printf("---------------------------------------------------------------\n")
 		fmt.Printf("---------------------Latency Policy Selected ------------------\n")
 
@@ -172,14 +197,14 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 				for _, app := range appList {
 					if j != chainPos {
 						key := getKey(i, app, nsh, j, totalChainServ)
-						fmt.Printf("Key: %v \n", key)
+						//fmt.Printf("Key: %v \n", key)
 						allocatedNode, ok := serviceHash[key]
 						if ok {
 							fmt.Printf("Key found! Allocated on Node: %v \n", allocatedNode)
 							podList.addPod(key, allocatedNode)
-						} else {
-							fmt.Printf("Key not found! \n")
-						}
+						} //else {
+						//fmt.Printf("Key not found! \n")
+						//}
 					}
 				}
 			}
@@ -201,20 +226,33 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 				addService(getKey(id, appName, nsh, chainPos, totalChainServ), nodeDelay)
 
 				// update Link bandwidth
-				value := getNodeBandwidth(nodeDelay) - podMinBandwith
-				updateNodeBandwidth(value,nodeDelay)
+				nodeBand := getBandwidthValue(&nodeDelay, "avBandwidth")
+				value := nodeBand - podMinBandwith
+
+				label := strconv.FormatFloat(value, 'f', 2, 64)
+				print(label)
+
+				nodeLabel := map[string]string{}
+				nodeLabel["avBandwidth"] = label
+
+				err = updateBandwidthLabel(nodeLabel, client) //&nodeDelay, "kubernetes.io/hostname")
+				if err != nil {
+					fmt.Printf("Encountered error when updating label: %v", err)
+				}
+
+				//updateNodeBandwidth(value,nodeDelay)
 				return []k8sApi.Node{nodeDelay}, nil
 			}
-		}else {
+		} else {
 			fmt.Printf("Pod List is empty! \n")
 			fmt.Printf("Target Location: %v \n", targetLocation)
 
-			if targetLocation != "Any"{ // Location Selection -> Location Policy
+			if targetLocation != "Any" { // Location Selection -> Location Policy
 				fmt.Printf("As if Location Policy was selected!! \n")
 				minDelay := getMinDelay(nodes, targetLocation)
 				node := locationSelection(nodes, minDelay, targetLocation, podMinBandwith)
 
-				if node.Name == "" {
+				if node.Name == "" { // No suitable Node found
 					return nil, fmt.Errorf("No suitable node for target Location with enough bandwidth!")
 				} else {
 					// add pod to Service Hash
@@ -222,46 +260,91 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 					addService(getKey(id, appName, nsh, chainPos, totalChainServ), node)
 
 					// update Link bandwidth
-					value := getNodeBandwidth(node) - podMinBandwith
-					updateNodeBandwidth(value,node)
+					nodeBand := getBandwidthValue(&node, "avBandwidth")
+					value := nodeBand - podMinBandwith
+
+					label := strconv.FormatFloat(value, 'f', 2, 64)
+					print(label)
+
+					nodeLabel := map[string]string{}
+					nodeLabel["avBandwidth"] = label
+
+					err = updateBandwidthLabel(nodeLabel, client) // &node, "kubernetes.io/hostname")
+					if err != nil {
+						fmt.Printf("Encountered error when updating label: %v", err)
+					}
+
+					//updateNodeBandwidth(value,node)
 
 					return []k8sApi.Node{node}, nil
 				}
 			}
 		}
 	}
-	// Device Type & Link MAX Cost Selection
-	fmt.Printf("Calculate Max Link Cost!! Higher amount of bandwidth used! \n")
+	// Link MAX Cost Selection
+	fmt.Printf("---------------------------------------------------------------\n")
+	fmt.Printf("----MAX Link Cost Selection: No suitable node found for Policy ----\n")
+	//fmt.Printf("Calculate Max Link Cost!! Higher amount of bandwidth used! \n")
 	nodeMaxLink, _ := calculateMaxLinkCost(nodes, podMinBandwith)
 
 	if nodeMaxLink.GetName() != "" {
-			fmt.Printf("Node Max Link selected! \n")
+		fmt.Printf("Node Max Link selected! \n")
 
-			// add pod to Service Hash
-			id++
-			addService(getKey(id, appName, nsh, chainPos, totalChainServ), nodeMaxLink)
+		// add pod to Service Hash
+		id++
+		addService(getKey(id, appName, nsh, chainPos, totalChainServ), nodeMaxLink)
 
-			// update Link bandwidth
-			value := getNodeBandwidth(nodeMaxLink) - podMinBandwith
-			updateNodeBandwidth(value, nodeMaxLink)
-			return []k8sApi.Node{nodeMaxLink}, nil
+		// update Link bandwidth
+		nodeBand := getBandwidthValue(&nodeMaxLink, "avBandwidth")
+		value := nodeBand - podMinBandwith
+
+		label := strconv.FormatFloat(value, 'f', 2, 64)
+		print(label)
+
+		nodeLabel := map[string]string{}
+		nodeLabel["avBandwidth"] = label
+
+		err = updateBandwidthLabel(nodeLabel, client) // &nodeMaxLink, "kubernetes.io/hostname")
+		if err != nil {
+			fmt.Printf("Encountered error when updating label: %v", err)
+		}
+
+		//updateNodeBandwidth(value, nodeMaxLink)
+		return []k8sApi.Node{nodeMaxLink}, nil
 	}
 
-	fmt.Printf("--------------------------------------------------------------\n")
-	fmt.Printf("---------------------Random Selection-------------------------\n")
+	fmt.Printf("---------------------------------------------------------------\n")
+	fmt.Printf("----------------Last Resource: Random Selection ---------------\n")
+
 	pick := randomSelection(nodes)
 	// add pod to Service Hash
 	id++
 	addService(getKey(id, appName, nsh, chainPos, totalChainServ), pick)
 
 	// update Link bandwidth
-	value := getNodeBandwidth(pick) - podMinBandwith
-	updateNodeBandwidth(value,pick)
+	nodeBand := getBandwidthValue(&pick, "avBandwidth")
+	value := nodeBand - podMinBandwith
+
+	if value < 0 {
+		value = 0.0
+	}
+
+	label := strconv.FormatFloat(value, 'f', 2, 64)
+	print(label)
+
+	nodeLabel := map[string]string{}
+	nodeLabel["avBandwidth"] = label
+
+	err = updateBandwidthLabel(nodeLabel, client) //&nodeMaxLink, "kubernetes.io/hostname"
+	if err != nil {
+		fmt.Printf("Encountered error when updating label: %v", err)
+	}
+
+	//updateNodeBandwidth(value, pick)
 	return []k8sApi.Node{pick}, nil
 }
 
-// GetMinRTT for the specified Location
-// the max float value if the label doesn't exist.
+// GetMinDelay for the specified Location
 func getMinDelay(nodes *k8sApi.NodeList, targetLocation string) float64 {
 	minDelay := math.MaxFloat64
 	for _, node := range nodes.Items {
@@ -272,6 +355,17 @@ func getMinDelay(nodes *k8sApi.NodeList, targetLocation string) float64 {
 	return minDelay
 }
 
+// getKey
+func getKey(id int, appName string, nsh string, chainPos int, totalChainServ int) string {
+	return strconv.Itoa(id) + "-" + appName + "-" + nsh + "-" + strconv.Itoa(chainPos) + "-" + strconv.Itoa(totalChainServ)
+}
+
+//getValue
+func getValue(shortPathCost map[string]float64, key string) float64 {
+	return shortPathCost[key]
+}
+
+/*
 // Return keys of the given map
 func getAllKeys(serviceHash map[string]string) (keys []string) {
 	for k := range serviceHash {
@@ -280,25 +374,7 @@ func getAllKeys(serviceHash map[string]string) (keys []string) {
 	return keys
 }
 
-// getKey
-func getKey(id int, appName string, nsh string, chainPos int, totalChainServ int) string {
-	return strconv.Itoa(id)+"-"+appName+"-"+nsh+"-"+ strconv.Itoa(chainPos)+"-"+strconv.Itoa(totalChainServ)
-}
-
-//getValue
-func getValue(shortPathCost map[string]float64, key string) float64 {
-	return shortPathCost[key]
-}
-
-func getDeviceType(node *k8sApi.Node) string {
-	deviceType, exists := node.Labels["deviceType"]
-	if exists {
-		return deviceType
-	}
-	return ""
-}
-
-/*
+// GetMinRTT finds the node with min RTT for the target Location
 func getMinRTT(nodes *k8sApi.NodeList, targetLocation string) float64 {
 	minRTT := math.MaxFloat64
 	for _, node := range nodes.Items {
@@ -307,6 +383,14 @@ func getMinRTT(nodes *k8sApi.NodeList, targetLocation string) float64 {
 		minRTT = math.Min(minRTT, rtt)
 	}
 	return minRTT
+}
+
+func getDeviceType(node *k8sApi.Node) string {
+	deviceType, exists := node.Labels["deviceType"]
+	if exists {
+		return deviceType
+	}
+	return ""
 }
 
 // GetRTTValue parses the RTT from a node's label or returns
@@ -321,6 +405,7 @@ func getRTTValue(node *k8sApi.Node, rttLocation string) float64 {
 	}
 	return math.MaxFloat64
 }
+*/
 
 // GetBandwidthValue parses the bandwidth from a node's label or returns
 // the max float value if the label doesn't exist.
@@ -335,21 +420,20 @@ func getBandwidthValue(node *k8sApi.Node, avBandwidth string) float64 {
 	return math.MaxFloat64
 }
 
-func updateBandwidthLabel(nodeLabels map[string]string, kubeClient kubernetes.Interface, candidateNode *k8sApi.Node, hostnameLabel string) error {
+func updateBandwidthLabel(nodeLabel map[string]string, kubeClient kubernetes.Interface) error {
 	k8sNodeList, err := kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("No nodes were provided")
 	}
 
 	for _, node := range k8sNodeList.Items {
-		if node.Labels[hostnameLabel] == candidateNode.Labels[hostnameLabel] {
-			node.SetLabels(nodeLabels)
-			if _, err = kubeClient.CoreV1().Nodes().Update(&node); err != nil {
-				fmt.Printf("Failed to update Label")
-				return fmt.Errorf("Failed to update Label")
-			}
+		//if node.Labels[hostnameLabel] == candidateNode.Labels[hostnameLabel] { //candidateNode *k8sApi.Node, hostnameLabel string
+		node.SetLabels(nodeLabel)
+		if _, err = kubeClient.CoreV1().Nodes().Update(&node); err != nil {
+			fmt.Printf("Failed to update Label")
+			return fmt.Errorf("Failed to update Label")
 		}
+		//}
 	}
 	return nil
 }
-*/

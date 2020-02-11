@@ -14,12 +14,12 @@
 
 # Use:
 #
-# `make container` will build a container -- you must supply a tag.
+# `make build` will build a container -- you must supply a tag.
 # `make push` will push the container -- you must supply a tag.
 
 REPO = jpedro1992/
 NAME = sfc-controller
-TAG = 0.0.1
+TAG = 0.0.2
 
 build:
 	docker build -t $(REPO)$(NAME):$(TAG) .

@@ -8,42 +8,16 @@ import (
 	"time"
 )
 
-var nodeBandwidth = map[string]float64{
-	"work1.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 	10.0,
-	"work2.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 	10.0,
-	"work3.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 	5.0,
-	"work4.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be":		10.0,
-	"work5.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	5.0,
-	"work6.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	10.0,
-	"work7.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	10.0,
-	"work8.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	10.0,
-	"work9.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	5.0,
-	"work13.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	30.0,
-	"work14.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	30.0,
-	"master0.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 	30.0,
-	"work10.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	10.0,
-	"work11.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	10.0,
-	"work12.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	10.0,
-}
-
-func getNodeBandwidth(node k8sApi.Node) float64 {
-	return nodeBandwidth[node.Name]
-}
-
-func updateNodeBandwidth(value float64, node k8sApi.Node){
-	nodeBandwidth[node.Name] = value
-	fmt.Printf("Selected Node %v  - Av. Bandwidth %v \n", node.Name, nodeBandwidth[node.Name])
-}
-
-func randomSelection(nodes *k8sApi.NodeList) (k8sApi.Node) {
+// Random Selection: pick a node randomly
+func randomSelection(nodes *k8sApi.NodeList) k8sApi.Node {
 	// Random Pick between the filtered Nodes
 	rand.Seed(time.Now().Unix())
-	numNodes:= len(nodes.Items)
-	pick := nodes.Items[rand.Int() % numNodes]
+	numNodes := len(nodes.Items)
+	pick := nodes.Items[rand.Int()%numNodes]
 	return pick
 }
 
-// locationSelection Select Node for the pod deployment based on the specified Location
+// locationSelection: Select Node for the pod deployment based on the specified Location OR
 // the max float value if the label doesn't exist.
 func locationSelection(nodes *k8sApi.NodeList, minDelay float64, targetLocation string, podMinBandwith float64) k8sApi.Node {
 	copyItems := nodes.Items
@@ -51,11 +25,12 @@ func locationSelection(nodes *k8sApi.NodeList, minDelay float64, targetLocation 
 	for i, node := range nodes.Items {
 		_, delay, _ := graphLatency.Path(node.Name, targetLocation)
 		if minDelay == float64(delay) {
-			if podMinBandwith <= getNodeBandwidth(node) {
+			nodeBand := getBandwidthValue(&node, "avBandwidth")
+			if podMinBandwith <= nodeBand {
 				fmt.Printf("Selected Node: %v \n", node.Name)
 				return node
 			} else {
-				fmt.Printf("Remove candidate Node %v , available Bandwidth not enough: %v (Mi)\n", node.Name, getNodeBandwidth(node))
+				fmt.Printf("Remove candidate Node %v , available Bandwidth not enough: %v (Mi)\n", node.Name, nodeBand)
 				copyItems = append(nodes.Items[:i], nodes.Items[i+1:]...)
 			}
 		}
@@ -69,6 +44,158 @@ func locationSelection(nodes *k8sApi.NodeList, minDelay float64, targetLocation 
 		fmt.Printf("---------------------Recursive Iteration ------------------\n")
 		return locationSelection(nodes, newDelay, targetLocation, podMinBandwith)
 	}
+}
+
+//calculate short path - Delay Cost
+func calculateShortPath(nodes *k8sApi.NodeList, podList *podList, podMinBandwidth float64) (k8sApi.Node, map[string]float64) {
+	delayCost := make(map[string]float64)
+	minCost := math.MaxFloat64
+	prevCost := minCost
+	selectedNode := k8sApi.Node{}
+
+	for _, node := range nodes.Items {
+		nodeBand := getBandwidthValue(&node, "avBandwidth")
+		if podMinBandwidth <= nodeBand {
+			fmt.Printf("Node: %v \n", node.Name)
+			podList.start()
+			for podList.current != nil {
+				// calculate each shortest path
+				_, cost, _ := graphLatency.Path(node.Name, podList.current.nodeAllocated)
+				fmt.Printf("Current Cost: %v \n", cost)
+				previousValue := getValue(delayCost, node.Name)
+				fmt.Printf("Previous Cost: %v \n", previousValue)
+				delayCost[node.Name] = previousValue + float64(cost)
+				fmt.Printf("Updated Cost: %v \n", delayCost[node.Name])
+				podList.next()
+			}
+
+			minCost = math.Min(minCost, float64(delayCost[node.Name]))
+
+			if prevCost > minCost {
+				prevCost = minCost
+				selectedNode = node
+				fmt.Printf("Updated min Node (Delay Cost): %v \n", node.Name)
+			}
+		} else {
+			fmt.Printf("Node %v av bandwidth not enough!\n", node.Name)
+			delayCost[node.Name] = 100000.0
+		}
+	}
+	return selectedNode, delayCost
+}
+
+//calculate Max Link Cost
+func calculateMaxLinkCost(nodes *k8sApi.NodeList, minBandwidth float64) (k8sApi.Node, map[string]float64) {
+
+	selectedNode := k8sApi.Node{}
+	prevCost := 0.0
+	linkCost := make(map[string]float64)
+
+	for _, node := range nodes.Items {
+
+		linkCost[node.Name] = minBandwidth / getBandwidthValue(&node, "avBandwidth")
+		fmt.Printf("Node: %v - Cost: %v \n", node.Name, linkCost[node.Name])
+
+		if prevCost < linkCost[node.Name] && linkCost[node.Name] <= 1.0 {
+			prevCost = linkCost[node.Name]
+			selectedNode = node
+			fmt.Printf("Updated Max Node (Link Cost): %v \n", node.Name)
+		}
+	}
+	return selectedNode, linkCost
+}
+
+/*
+// min = 0.0
+// max = 10.0
+func normalize(value float64) float64{
+	normalized := (value - 0.0) / (10.0 - 0.0)
+	return normalized
+}
+
+//calculate Location Cost
+func calculateLocationCost(nodes *k8sApi.NodeList, targetLocation string) (k8sApi.Node, map[string]float64) {
+
+	selectedNode := k8sApi.Node{}
+	minCost := math.MaxFloat64
+	prevCost := minCost
+	locationCost := make(map[string]float64)
+
+	for _, node := range nodes.Items {
+
+		fmt.Printf("Calculate Location Cost for Node: %v \n", node.Name)
+
+		_, cost, _ := graphLatency.Path(node.Name, targetLocation)
+		locationCost[node.Name] = float64(cost)
+
+		fmt.Printf("Cost: %v \n", locationCost[node.Name])
+
+		minCost = math.Min(minCost, locationCost[node.Name])
+
+		if prevCost > minCost {
+			prevCost = minCost
+			selectedNode = node
+			fmt.Printf("Updated min Node (Location Cost): %v \n", node.Name)
+		}
+	}
+	return selectedNode, locationCost
+}
+
+//calculate Min Link Cost
+func calculateMinLinkCost(nodes *k8sApi.NodeList, minBandwidth float64) (k8sApi.Node, map[string]float64) {
+
+	selectedNode := k8sApi.Node{}
+	minCost := math.MaxFloat64
+	prevCost := minCost
+	linkCost := make(map[string]float64)
+
+	for _, node := range nodes.Items {
+
+		fmt.Printf("Calculate Link Cost for Node: %v \n", node.Name)
+
+		linkCost[node.Name] = minBandwidth / getNodeBandwidth(node)
+
+		fmt.Printf("Cost: %v \n", linkCost[node.Name])
+
+		minCost = math.Min(minCost, linkCost[node.Name])
+
+		if prevCost > minCost {
+			prevCost = minCost
+			selectedNode = node
+			fmt.Printf("Updated min Node (Link Cost): %v \n", node.Name)
+		}
+	}
+	return selectedNode, linkCost
+}
+
+//calculate balanced score - Resource Cost
+func calculateResourceCost(nodes *k8sApi.NodeList) (k8sApi.Node, map[string]int){
+
+	selectedNode := k8sApi.Node{}
+	minCost := math.MaxFloat64
+	prevCost := minCost
+	resourceCost := make(map[string]int)
+
+	for _, node := range nodes.Items {
+
+		fmt.Printf("Calculate Resource Cost for Node: %v \n", node.Name)
+
+		scoreBalance := balancedResourceScorer(&node)
+		scoreLeast := leastResourceScorer(&node)
+
+		fmt.Printf("ScoreBalance: %v \n", scoreBalance)
+		fmt.Printf("scoreLeast: %v \n", scoreLeast)
+
+		resourceCost[node.Name] = int(float64(scoreBalance) * 0.5 + float64(scoreLeast) * 0.5)
+		minCost = math.Min(minCost, float64(resourceCost[node.Name]))
+
+		if prevCost > minCost {
+			prevCost = minCost
+			selectedNode = node
+			fmt.Printf("Updated min Node (Resource Cost): %v \n", node.Name)
+		}
+	}
+	return selectedNode, resourceCost
 }
 
 func fractionOfCapacity(requested, capacity int64) float64 {
@@ -131,152 +258,32 @@ func leastRequestedScore(requested, capacity int64) int64 {
 	return ((capacity - requested) * int64(10)) / capacity
 }
 
-//calculate short path - Delay Cost
-func calculateShortPath(nodes *k8sApi.NodeList, podList *podList, podMinBandwith float64) (k8sApi.Node, map[string]float64) {
-	delayCost := make(map[string]float64)
-	minCost := math.MaxFloat64
-	prevCost := minCost
-	selectedNode := k8sApi.Node{}
-
-	for _, node := range nodes.Items {
-		if podMinBandwith <= getNodeBandwidth(node) {
-			fmt.Printf("Node: %v \n", node.Name)
-			podList.start()
-			for podList.current != nil {
-				// calculate each shortest path
-				_, cost, _ := graphLatency.Path(node.Name, podList.current.nodeAllocated)
-				fmt.Printf("Current Cost: %v \n", cost)
-				previousValue := getValue(delayCost, node.Name)
-				fmt.Printf("Previous Cost: %v \n", previousValue)
-				delayCost[node.Name] = previousValue + float64(cost)
-				fmt.Printf("Updated Cost: %v \n", delayCost[node.Name])
-				podList.next()
-			}
-
-			minCost = math.Min(minCost, float64(delayCost[node.Name]))
-
-			if prevCost > minCost {
-				prevCost = minCost
-				selectedNode = node
-				fmt.Printf("Updated min Node (Delay Cost): %v \n", node.Name)
-			}
-		} else{
-			fmt.Printf("Node %v av bandwidth not enough!\n", node.Name)
-			delayCost[node.Name] = 100000.0
-		}
-	}
-	return selectedNode, delayCost
+var nodeBandwidth = map[string]float64{
+	"work1.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 	10.0,
+	"work2.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 	10.0,
+	"work3.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 	5.0,
+	"work4.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be":		10.0,
+	"work5.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	5.0,
+	"work6.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	10.0,
+	"work7.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	10.0,
+	"work8.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	10.0,
+	"work9.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	5.0,
+	"work13.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	30.0,
+	"work14.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	30.0,
+	"master0.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 	30.0,
+	"work10.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	10.0,
+	"work11.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	10.0,
+	"work12.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	10.0,
 }
 
-//calculate balanced score - Resource Cost
-func calculateResourceCost(nodes *k8sApi.NodeList) (k8sApi.Node, map[string]int){
-
-	selectedNode := k8sApi.Node{}
-	minCost := math.MaxFloat64
-	prevCost := minCost
-	resourceCost := make(map[string]int)
-
-	for _, node := range nodes.Items {
-
-		fmt.Printf("Calculate Resource Cost for Node: %v \n", node.Name)
-
-		scoreBalance := balancedResourceScorer(&node)
-		scoreLeast := leastResourceScorer(&node)
-
-		fmt.Printf("ScoreBalance: %v \n", scoreBalance)
-		fmt.Printf("scoreLeast: %v \n", scoreLeast)
-
-		resourceCost[node.Name] = int(float64(scoreBalance) * 0.5 + float64(scoreLeast) * 0.5)
-		minCost = math.Min(minCost, float64(resourceCost[node.Name]))
-
-		if prevCost > minCost {
-			prevCost = minCost
-			selectedNode = node
-			fmt.Printf("Updated min Node (Resource Cost): %v \n", node.Name)
-		}
-	}
-	return selectedNode, resourceCost
+// return nodeBandwidth
+func getNodeBandwidth(node k8sApi.Node) float64 {
+	return nodeBandwidth[node.Name]
 }
 
-//calculate Location Cost
-func calculateLocationCost(nodes *k8sApi.NodeList, targetLocation string) (k8sApi.Node, map[string]float64) {
-
-	selectedNode := k8sApi.Node{}
-	minCost := math.MaxFloat64
-	prevCost := minCost
-	locationCost := make(map[string]float64)
-
-	for _, node := range nodes.Items {
-
-		fmt.Printf("Calculate Location Cost for Node: %v \n", node.Name)
-
-		_, cost, _ := graphLatency.Path(node.Name, targetLocation)
-		locationCost[node.Name] = float64(cost)
-
-		fmt.Printf("Cost: %v \n", locationCost[node.Name])
-
-		minCost = math.Min(minCost, locationCost[node.Name])
-
-		if prevCost > minCost {
-			prevCost = minCost
-			selectedNode = node
-			fmt.Printf("Updated min Node (Location Cost): %v \n", node.Name)
-		}
-	}
-	return selectedNode, locationCost
+// update nodeBandwidth
+func updateNodeBandwidth(value float64, node k8sApi.Node){
+	nodeBandwidth[node.Name] = value
+	fmt.Printf("Selected Node %v  - Av. Bandwidth %v \n", node.Name, nodeBandwidth[node.Name])
 }
-
-//calculate Min Link Cost
-func calculateMinLinkCost(nodes *k8sApi.NodeList, minBandwidth float64) (k8sApi.Node, map[string]float64) {
-
-	selectedNode := k8sApi.Node{}
-	minCost := math.MaxFloat64
-	prevCost := minCost
-	linkCost := make(map[string]float64)
-
-	for _, node := range nodes.Items {
-
-		fmt.Printf("Calculate Link Cost for Node: %v \n", node.Name)
-
-		linkCost[node.Name] = minBandwidth / getNodeBandwidth(node)
-
-		fmt.Printf("Cost: %v \n", linkCost[node.Name])
-
-		minCost = math.Min(minCost, linkCost[node.Name])
-
-		if prevCost > minCost {
-			prevCost = minCost
-			selectedNode = node
-			fmt.Printf("Updated min Node (Link Cost): %v \n", node.Name)
-		}
-	}
-	return selectedNode, linkCost
-}
-
-//calculate Max Link Cost
-func calculateMaxLinkCost(nodes *k8sApi.NodeList, minBandwidth float64) (k8sApi.Node, map[string]float64) {
-
-	selectedNode := k8sApi.Node{}
-	prevCost := 0.0
-	linkCost := make(map[string]float64)
-
-	for _, node := range nodes.Items {
-
-		linkCost[node.Name] = minBandwidth / getNodeBandwidth(node)
-		fmt.Printf("Node: %v - Cost: %v \n", node.Name, linkCost[node.Name])
-
-		if prevCost < linkCost[node.Name] && linkCost[node.Name] <= 1.0 {
-			prevCost = linkCost[node.Name]
-			selectedNode = node
-			fmt.Printf("Updated max Node (Link Cost): %v \n", node.Name)
-		}
-	}
-	return selectedNode, linkCost
-}
-
-// min = 0.0
-// max = 10.0
-func normalize(value float64) float64{
-	normalized := (value - 0.0) / (10.0 - 0.0)
-	return normalized
-}
+*/

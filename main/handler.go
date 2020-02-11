@@ -9,8 +9,9 @@ import (
 	"time"
 )
 
-// handler handles a request from the kubernetes scheduler.
+// handler receives a request from the kubernetes scheduler.
 func handler(w http.ResponseWriter, r *http.Request) {
+
 	// decode request body.
 	start := time.Now()
 	dec := json.NewDecoder(r.Body)
@@ -33,7 +34,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	enc.Encode(&k8sSchedulerApi.ExtenderFilterResult{
+	_ = enc.Encode(&k8sSchedulerApi.ExtenderFilterResult{
 		Nodes: k8sApi.NodeList{
 			Items: nodes,
 		},
@@ -44,6 +45,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// Home Dir
 //func homeDir() string {
 //	if h := os.Getenv("HOME"); h != "" {
 //		return h

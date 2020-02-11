@@ -2,27 +2,31 @@ package main
 
 import "fmt"
 
+//pod structure
 type pod struct {
-	key string
+	key           string
 	nodeAllocated string
-	next *pod
+	next          *pod
 }
 
+//List structure
 type podList struct {
-	name       string
-	head       *pod
-	current	   *pod
+	name    string
+	head    *pod
+	current *pod
 }
 
+// create the list
 func createPodList(name string) *podList {
 	return &podList{
 		name: name,
 	}
 }
 
+// addPod() adds an element to the list
 func (p *podList) addPod(key, nodeAllocated string) error {
 	s := &pod{
-		key:   key,
+		key:           key,
 		nodeAllocated: nodeAllocated,
 	}
 	if p.head == nil {
@@ -37,6 +41,7 @@ func (p *podList) addPod(key, nodeAllocated string) error {
 	return nil
 }
 
+// showAllPods() prints all elements on the list
 func (p *podList) showAllPods() error {
 	currentNode := p.head
 	if currentNode == nil {
@@ -52,17 +57,19 @@ func (p *podList) showAllPods() error {
 	return nil
 }
 
+//start() returns the first/head element
 func (p *podList) start() *pod {
 	p.current = p.head
 	return p.current
 }
 
+//next() returns the next element on the list
 func (p *podList) next() *pod {
 	p.current = p.current.next
 	return p.current
 }
 
-// IsEmpty returns true if the list is empty
+// IsEmpty() returns true if the list is empty
 func (p *podList) isEmpty() bool {
 	if p.head == nil {
 		return true
@@ -70,7 +77,7 @@ func (p *podList) isEmpty() bool {
 	return false
 }
 
-// Size returns the linked list size
+// getSize() returns the linked list size
 func (p *podList) getSize() int {
 	size := 1
 	last := p.head
