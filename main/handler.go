@@ -9,6 +9,14 @@ import (
 	"time"
 )
 
+// Problem with Imports:
+
+// New: k8sApi "k8s.io/api/core/v1"
+// New: k8sSchedulerApi "k8s.io/kubernetes/pkg/scheduler/apis/extender/v1"
+
+// Old: k8sApi "k8s.io/kubernetes/pkg/api"
+// Old: k8sSchedulerApi "k8s.io/kubernetes/plugin/pkg/scheduler/api"
+
 // handler receives a request from the kubernetes scheduler.
 func handler(w http.ResponseWriter, r *http.Request) {
 

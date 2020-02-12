@@ -8,6 +8,36 @@ import (
 	"time"
 )
 
+var nodeBandwidth = map[string]float64{
+	"docker-desktop": 10.0,
+	"work1.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be":   10.0,
+	"work2.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be":   10.0,
+	"work3.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be":   5.0,
+	"work4.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be":   10.0,
+	"work5.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be":   5.0,
+	"work6.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be":   10.0,
+	"work7.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be":   10.0,
+	"work8.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be":   10.0,
+	"work9.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be":   5.0,
+	"work13.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be":  30.0,
+	"work14.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be":  30.0,
+	"master0.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 30.0,
+	"work10.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be":  10.0,
+	"work11.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be":  10.0,
+	"work12.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be":  10.0,
+}
+
+// return nodeBandwidth
+func getNodeBandwidth(node k8sApi.Node) float64 {
+	return nodeBandwidth[node.Name]
+}
+
+// update nodeBandwidth
+func updateNodeBandwidth(value float64, node k8sApi.Node) {
+	nodeBandwidth[node.Name] = value
+	fmt.Printf("Selected Node %v  - Av. Bandwidth %v \n", node.Name, nodeBandwidth[node.Name])
+}
+
 // Random Selection: pick a node randomly
 func randomSelection(nodes *k8sApi.NodeList) k8sApi.Node {
 	// Random Pick between the filtered Nodes
@@ -256,34 +286,5 @@ func leastRequestedScore(requested, capacity int64) int64 {
 	}
 
 	return ((capacity - requested) * int64(10)) / capacity
-}
-
-var nodeBandwidth = map[string]float64{
-	"work1.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 	10.0,
-	"work2.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 	10.0,
-	"work3.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 	5.0,
-	"work4.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be":		10.0,
-	"work5.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	5.0,
-	"work6.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	10.0,
-	"work7.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	10.0,
-	"work8.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	10.0,
-	"work9.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	5.0,
-	"work13.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	30.0,
-	"work14.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	30.0,
-	"master0.kbcluster1.wall2-ilabt-iminds-be.wall2.ilabt.iminds.be": 	30.0,
-	"work10.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	10.0,
-	"work11.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	10.0,
-	"work12.kbcluster2.wall2-ilabt-iminds-be.wall1.ilabt.iminds.be": 	10.0,
-}
-
-// return nodeBandwidth
-func getNodeBandwidth(node k8sApi.Node) float64 {
-	return nodeBandwidth[node.Name]
-}
-
-// update nodeBandwidth
-func updateNodeBandwidth(value float64, node k8sApi.Node){
-	nodeBandwidth[node.Name] = value
-	fmt.Printf("Selected Node %v  - Av. Bandwidth %v \n", node.Name, nodeBandwidth[node.Name])
 }
 */
