@@ -240,7 +240,7 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 
 				label := strconv.FormatFloat(value, 'f', 2, 64)
 
-				err = updateBandwidthLabel(label, client, &nodeDelay, "kubernetes.io/hostname") //&nodeDelay, "kubernetes.io/hostname")
+				err = updateBandwidthLabel(label, client, &nodeDelay, "kubernetes.io/hostname")
 				if err != nil {
 					fmt.Printf("Encountered error when updating label: %v", err)
 				}
@@ -270,7 +270,7 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 
 					label := strconv.FormatFloat(value, 'f', 2, 64)
 
-					err = updateBandwidthLabel(label, client, &node, "kubernetes.io/hostname") // &node, "kubernetes.io/hostname")
+					err = updateBandwidthLabel(label, client, &node, "kubernetes.io/hostname")
 					if err != nil {
 						fmt.Printf("Encountered error when updating label: %v", err)
 					}
@@ -300,7 +300,7 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 
 		label := strconv.FormatFloat(value, 'f', 2, 64)
 
-		err = updateBandwidthLabel(label, client, &nodeMaxLink, "kubernetes.io/hostname") // &nodeMaxLink, "kubernetes.io/hostname")
+		err = updateBandwidthLabel(label, client, &nodeMaxLink, "kubernetes.io/hostname")
 		if err != nil {
 			fmt.Printf("Encountered error when updating label: %v", err)
 		}
@@ -327,7 +327,7 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 
 	label := strconv.FormatFloat(value, 'f', 2, 64)
 
-	err = updateBandwidthLabel(label, client, &pick, "kubernetes.io/hostname") //&nodeMaxLink, "kubernetes.io/hostname"
+	err = updateBandwidthLabel(label, client, &pick, "kubernetes.io/hostname")
 	if err != nil {
 		fmt.Printf("Encountered error when updating label: %v", err)
 	}
