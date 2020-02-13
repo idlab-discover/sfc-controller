@@ -1,4 +1,4 @@
-module sfc-controller-modules
+module sfc-controller
 
 go 1.13
 
