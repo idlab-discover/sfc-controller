@@ -27,7 +27,7 @@ spec:
       serviceAccountName: sfc-controller
       containers:
       - name: sfc-controller
-        image: jpedro1992/sfc-controller:0.0.1
+        image: jpedro1992/sfc-controller:0.0.2
         ports:
         - containerPort: 8100
       - name: kube-scheduler

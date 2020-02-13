@@ -2,12 +2,25 @@ package main
 
 import (
 	"fmt"
-	k8sApi "k8s.io/kubernetes/pkg/api"
-
+	k8sApi "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"math"
 	"strconv"
 	"strings"
 )
+
+// Problem with Imports:
+
+// New: k8sApi "k8s.io/api/core/v1"
+// New: k8sSchedulerApi "k8s.io/kubernetes/pkg/scheduler/apis/extender/v1"
+
+// Old: k8sApi "k8s.io/kubernetes/pkg/api"
+// Old: k8sSchedulerApi "k8s.io/kubernetes/plugin/pkg/scheduler/api"
+// Old: metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+// Old: "k8s.io/client-go/kubernetes"
+// Old: "k8s.io/client-go/rest"
 
 var id = 0
 var serviceHash = make(map[string]string)
@@ -136,17 +149,16 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 	fmt.Printf("nextApp: %v \n", nextApp)
 	fmt.Printf("Service Chain: %v \n", appList)
 
-	/*
-		// creates the in-cluster config
-		config, err := rest.InClusterConfig()
-		if err != nil {
-			panic(err.Error())
-		}
-		// creates the clientset
-		client, err := kubernetes.NewForConfig(config)
-		if err != nil {
-			panic(err.Error())
-		}*/
+	// creates the in-cluster config
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		panic(err.Error())
+	}
+	// creates the client
+	client, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err.Error())
+	}
 
 	if policy == "Location" { // If Location Policy enabled
 
@@ -168,19 +180,14 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 			nodeBand := getNodeBandwidth(node) //getBandwidthValue(&node, "avBandwidth")
 			value := nodeBand - podMinBandwith
 
-			/*
-				label := strconv.FormatFloat(value, 'f', 2, 64)
-				print(label)
+			label := strconv.FormatFloat(value, 'f', 2, 64)
 
-				nodeLabel := map[string]string{}
-				nodeLabel["avBandwidth"] = label
+			err = updateBandwidthLabel(label, client, &node, "kubernetes.io/hostname") // &node, "kubernetes.io/hostname")
+			if err != nil {
+				fmt.Printf("Encountered error when updating label: %v", err)
+			}
 
-				err = updateBandwidthLabel(nodeLabel, client) // &node, "kubernetes.io/hostname")
-				if err != nil {
-					fmt.Printf("Encountered error when updating label: %v", err)
-				}*/
-
-			updateNodeBandwidth(value, node)
+			//updateNodeBandwidth(value, node)
 			return []k8sApi.Node{node}, nil
 		}
 
@@ -228,20 +235,14 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 				nodeBand := getNodeBandwidth(nodeDelay) // getBandwidthValue(&nodeDelay, "avBandwidth")
 				value := nodeBand - podMinBandwith
 
-				/*
-					label := strconv.FormatFloat(value, 'f', 2, 64)
-					print(label)
+				label := strconv.FormatFloat(value, 'f', 2, 64)
 
-					nodeLabel := map[string]string{}
-					nodeLabel["avBandwidth"] = label
+				err = updateBandwidthLabel(label, client, &nodeDelay, "kubernetes.io/hostname") //&nodeDelay, "kubernetes.io/hostname")
+				if err != nil {
+					fmt.Printf("Encountered error when updating label: %v", err)
+				}
 
-					err = updateBandwidthLabel(nodeLabel, client) //&nodeDelay, "kubernetes.io/hostname")
-					if err != nil {
-						fmt.Printf("Encountered error when updating label: %v", err)
-					}
-				*/
-
-				updateNodeBandwidth(value, nodeDelay)
+				//updateNodeBandwidth(value, nodeDelay)
 				return []k8sApi.Node{nodeDelay}, nil
 			}
 		} else {
@@ -264,20 +265,14 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 					nodeBand := getNodeBandwidth(node) // getBandwidthValue(&node, "avBandwidth")
 					value := nodeBand - podMinBandwith
 
-					/*
-						label := strconv.FormatFloat(value, 'f', 2, 64)
-						print(label)
+					label := strconv.FormatFloat(value, 'f', 2, 64)
 
-						nodeLabel := map[string]string{}
-						nodeLabel["avBandwidth"] = label
+					err = updateBandwidthLabel(label, client, &node, "kubernetes.io/hostname") // &node, "kubernetes.io/hostname")
+					if err != nil {
+						fmt.Printf("Encountered error when updating label: %v", err)
+					}
 
-						err = updateBandwidthLabel(nodeLabel, client) // &node, "kubernetes.io/hostname")
-						if err != nil {
-							fmt.Printf("Encountered error when updating label: %v", err)
-						}
-					*/
-
-					updateNodeBandwidth(value, node)
+					//updateNodeBandwidth(value, node)
 					return []k8sApi.Node{node}, nil
 				}
 			}
@@ -285,7 +280,7 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 	}
 	// Link MAX Cost Selection
 	fmt.Printf("---------------------------------------------------------------\n")
-	fmt.Printf("----MAX Link Cost Selection: No suitable node found for Policy ----\n")
+	fmt.Printf("---------------------MAX Link Cost Selection-------------------\n")
 	//fmt.Printf("Calculate Max Link Cost!! Higher amount of bandwidth used! \n")
 	nodeMaxLink, _ := calculateMaxLinkCost(nodes, podMinBandwith)
 
@@ -300,19 +295,14 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 		nodeBand := getNodeBandwidth(nodeMaxLink) // getBandwidthValue(&nodeMaxLink, "avBandwidth")
 		value := nodeBand - podMinBandwith
 
-		/*
-			label := strconv.FormatFloat(value, 'f', 2, 64)
-			print(label)
+		label := strconv.FormatFloat(value, 'f', 2, 64)
 
-			nodeLabel := map[string]string{}
-			nodeLabel["avBandwidth"] = label
+		err = updateBandwidthLabel(label, client, &nodeMaxLink, "kubernetes.io/hostname") // &nodeMaxLink, "kubernetes.io/hostname")
+		if err != nil {
+			fmt.Printf("Encountered error when updating label: %v", err)
+		}
 
-			err = updateBandwidthLabel(nodeLabel, client) // &nodeMaxLink, "kubernetes.io/hostname")
-			if err != nil {
-				fmt.Printf("Encountered error when updating label: %v", err)
-			}*/
-
-		updateNodeBandwidth(value, nodeMaxLink)
+		//updateNodeBandwidth(value, nodeMaxLink)
 		return []k8sApi.Node{nodeMaxLink}, nil
 	}
 
@@ -332,20 +322,14 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 		value = 0.0
 	}
 
-	/*
-		label := strconv.FormatFloat(value, 'f', 2, 64)
-		print(label)
+	label := strconv.FormatFloat(value, 'f', 2, 64)
 
-		nodeLabel := map[string]string{}
-		nodeLabel["avBandwidth"] = label
+	err = updateBandwidthLabel(label, client, &pick, "kubernetes.io/hostname") //&nodeMaxLink, "kubernetes.io/hostname"
+	if err != nil {
+		fmt.Printf("Encountered error when updating label: %v", err)
+	}
 
-		err = updateBandwidthLabel(nodeLabel, client) //&nodeMaxLink, "kubernetes.io/hostname"
-		if err != nil {
-			fmt.Printf("Encountered error when updating label: %v", err)
-		}
-	*/
-
-	updateNodeBandwidth(value, pick)
+	//updateNodeBandwidth(value, pick)
 	return []k8sApi.Node{pick}, nil
 }
 
@@ -368,6 +352,42 @@ func getKey(id int, appName string, nsh string, chainPos int, totalChainServ int
 //getValue
 func getValue(shortPathCost map[string]float64, key string) float64 {
 	return shortPathCost[key]
+}
+
+// GetBandwidthValue parses the bandwidth from a node's label or returns
+// the max float value if the label doesn't exist.
+func getBandwidthValue(node *k8sApi.Node, avBandwidth string) float64 {
+	nodeBandwidth, exists := node.Labels[avBandwidth]
+	if exists {
+		nodeBandwidth, err := strconv.ParseFloat(nodeBandwidth, 64)
+		if err == nil {
+			return nodeBandwidth
+		}
+	}
+	return math.MaxFloat64
+}
+
+func updateBandwidthLabel(label string, kubeClient kubernetes.Interface, candidateNode *k8sApi.Node, hostnameLabel string) error {
+
+	nodeLabels := candidateNode.GetLabels()
+	nodeLabels["avBandwidth"] = label
+
+	fmt.Printf("Updating Bandwidth Label: avBandwidth = %v \n", label)
+
+	k8sNodeList, err := kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("No nodes were provided")
+	}
+
+	for _, node := range k8sNodeList.Items {
+		if node.Labels[hostnameLabel] == candidateNode.Labels[hostnameLabel] {
+			node.SetLabels(nodeLabels)
+			if _, err = kubeClient.CoreV1().Nodes().Update(&node); err != nil {
+				return fmt.Errorf("Failed to update Label")
+			}
+		}
+	}
+	return nil
 }
 
 /*
@@ -410,35 +430,4 @@ func getRTTValue(node *k8sApi.Node, rttLocation string) float64 {
 	}
 	return math.MaxFloat64
 }
-
-func updateBandwidthLabel(nodeLabel map[string]string, kubeClient kubernetes.Interface) error {
-	k8sNodeList, err := kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
-	if err != nil {
-		return fmt.Errorf("No nodes were provided")
-	}
-
-	for _, node := range k8sNodeList.Items {
-		//if node.Labels[hostnameLabel] == candidateNode.Labels[hostnameLabel] { //candidateNode *k8sApi.Node, hostnameLabel string
-		node.SetLabels(nodeLabel)
-		if _, err = kubeClient.CoreV1().Nodes().Update(&node); err != nil {
-			fmt.Printf("Failed to update Label")
-			return fmt.Errorf("Failed to update Label")
-		}
-		//}
-	}
-	return nil
-}
 */
-
-// GetBandwidthValue parses the bandwidth from a node's label or returns
-// the max float value if the label doesn't exist.
-func getBandwidthValue(node *k8sApi.Node, avBandwidth string) float64 {
-	nodeBandwidth, exists := node.Labels[avBandwidth]
-	if exists {
-		nodeBandwidth, err := strconv.ParseFloat(nodeBandwidth, 64)
-		if err == nil {
-			return nodeBandwidth
-		}
-	}
-	return math.MaxFloat64
-}

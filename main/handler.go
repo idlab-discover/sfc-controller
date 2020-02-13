@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	k8sApi "k8s.io/kubernetes/pkg/api"
-	k8sSchedulerApi "k8s.io/kubernetes/plugin/pkg/scheduler/api"
+	k8sApi "k8s.io/api/core/v1"
+	k8sSchedulerApi "k8s.io/kubernetes/pkg/scheduler/apis/extender/v1"
 	"net/http"
 	"time"
 )
@@ -16,6 +16,9 @@ import (
 
 // Old: k8sApi "k8s.io/kubernetes/pkg/api"
 // Old: k8sSchedulerApi "k8s.io/kubernetes/plugin/pkg/scheduler/api"
+// Old: metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+// Old: "k8s.io/client-go/kubernetes"
+// Old: "k8s.io/client-go/rest"
 
 // handler receives a request from the kubernetes scheduler.
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -30,10 +33,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logNodes(&received.Nodes)
+	logNodes(received.Nodes)
 
 	// select the node to schedule on.
-	nodes, err := selectNode(&received.Nodes, &received.Pod)
+	nodes, err := selectNode(received.Nodes, received.Pod) //&
 	if err != nil {
 		fmt.Printf("Encountered error when selecting node: %v", err)
 	}
@@ -43,7 +46,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	_ = enc.Encode(&k8sSchedulerApi.ExtenderFilterResult{
-		Nodes: k8sApi.NodeList{
+		Nodes: &k8sApi.NodeList{ //no &
 			Items: nodes,
 		},
 	})

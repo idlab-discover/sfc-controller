@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	k8sApi "k8s.io/kubernetes/pkg/api"
+	k8sApi "k8s.io/api/core/v1"
 	"math"
 	"math/rand"
 	"time"
