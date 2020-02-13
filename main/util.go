@@ -177,7 +177,7 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 			addService(getKey(id, appName, nsh, chainPos, totalChainServ), node)
 
 			// update Link bandwidth
-			nodeBand := getNodeBandwidth(node) //getBandwidthValue(&node, "avBandwidth")
+			nodeBand := getBandwidthValue(&node, "avBandwidth")
 			value := nodeBand - podMinBandwith
 
 			label := strconv.FormatFloat(value, 'f', 2, 64)
@@ -207,7 +207,10 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 						allocatedNode, ok := serviceHash[key]
 						if ok {
 							fmt.Printf("Key found! Allocated on Node: %v \n", allocatedNode)
-							podList.addPod(key, allocatedNode)
+							err := podList.addPod(key, allocatedNode)
+							if err != nil {
+								fmt.Printf("Encountered error when adding Pod to the List: %v", err)
+							}
 						} //else {
 						//fmt.Printf("Key not found! \n")
 						//}
@@ -232,7 +235,7 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 				addService(getKey(id, appName, nsh, chainPos, totalChainServ), nodeDelay)
 
 				// update Link bandwidth
-				nodeBand := getNodeBandwidth(nodeDelay) // getBandwidthValue(&nodeDelay, "avBandwidth")
+				nodeBand := getBandwidthValue(&nodeDelay, "avBandwidth")
 				value := nodeBand - podMinBandwith
 
 				label := strconv.FormatFloat(value, 'f', 2, 64)
@@ -262,7 +265,7 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 					addService(getKey(id, appName, nsh, chainPos, totalChainServ), node)
 
 					// update Link bandwidth
-					nodeBand := getNodeBandwidth(node) // getBandwidthValue(&node, "avBandwidth")
+					nodeBand := getBandwidthValue(&node, "avBandwidth")
 					value := nodeBand - podMinBandwith
 
 					label := strconv.FormatFloat(value, 'f', 2, 64)
@@ -292,7 +295,7 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 		addService(getKey(id, appName, nsh, chainPos, totalChainServ), nodeMaxLink)
 
 		// update Link bandwidth
-		nodeBand := getNodeBandwidth(nodeMaxLink) // getBandwidthValue(&nodeMaxLink, "avBandwidth")
+		nodeBand := getBandwidthValue(&nodeMaxLink, "avBandwidth")
 		value := nodeBand - podMinBandwith
 
 		label := strconv.FormatFloat(value, 'f', 2, 64)
@@ -315,7 +318,7 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 	addService(getKey(id, appName, nsh, chainPos, totalChainServ), pick)
 
 	// update Link bandwidth
-	nodeBand := getNodeBandwidth(pick) //getBandwidthValue(&pick, "avBandwidth")
+	nodeBand := getBandwidthValue(&pick, "avBandwidth")
 	value := nodeBand - podMinBandwith
 
 	if value < 0 {
