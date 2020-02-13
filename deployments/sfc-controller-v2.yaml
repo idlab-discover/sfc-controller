@@ -1,39 +1,39 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: network-aware-scheduler
+  name: sfc-controller
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: network-aware-scheduler-role-binding
+  name: sfc-controller-role-binding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: system:kube-scheduler
 subjects:
 - kind: ServiceAccount
-  name: network-aware-scheduler
+  name: sfc-controller
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: network-aware-scheduler-volume-role-binding
+  name: sfc-controller-volume-role-binding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: system:volume-scheduler
 subjects:
 - kind: ServiceAccount
-  name: network-aware-scheduler
+  name: sfc-controller
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: network-aware-scheduler-config-role-binding
+  name: sfc-controller-config-role-binding
   namespace: kube-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -41,7 +41,7 @@ roleRef:
   name: extension-apiserver-authentication-reader
 subjects:
 - kind: ServiceAccount
-  name: network-aware-scheduler
+  name: sfc-controller
   namespace: kube-system
 ---
 apiVersion: apps/v1beta1
@@ -50,7 +50,7 @@ metadata:
   labels:
     component: scheduler
     tier: control-plane
-  name: network-aware-scheduler
+  name: sfc-controller
   namespace: kube-system
 spec:
   selector:
@@ -65,21 +65,21 @@ spec:
         tier: control-plane
         version: second
     spec:
-      serviceAccountName: network-aware-scheduler
+      serviceAccountName: sfc-controller
       containers:
-      - name: extender
-        image: jpedro1992/network-aware-scheduler:0.0.4
+      - name: sfc-controller
+        image: jpedro1992/sfc-controller:0.0.2
         ports:
         - containerPort: 8100
         imagePullPolicy: Always
-      - name: network-aware-scheduler
+      - name: kube-scheduler
         image: mirrorgooglecontainers/kube-scheduler:v1.12.3-beta.0
         command:
         - /usr/local/bin/kube-scheduler
         - --address=0.0.0.0
         - --leader-elect=false
-        - --scheduler-name=network-aware-scheduler
-        - --policy-configmap=network-aware-scheduler-config
+        - --scheduler-name=sfc-controller
+        - --policy-configmap=sfc-controller-config
         - --policy-configmap-namespace=kube-system
         livenessProbe:
           httpGet:
