@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/network-aware-scheduler.iml" filepath="$PROJECT_DIR$/.idea/network-aware-scheduler.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/sfc-controller.iml" filepath="$PROJECT_DIR$/.idea/sfc-controller.iml" />
     </modules>
   </component>
 </project>

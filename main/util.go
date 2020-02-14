@@ -5,25 +5,19 @@ import (
 	k8sApi "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
+	"log"
 	"math"
 	"strconv"
 	"strings"
 )
 
-// Problem with Imports:
+var (
+	// Service Hash IDs
+	id = 0
 
-// New: k8sApi "k8s.io/api/core/v1"
-// New: k8sSchedulerApi "k8s.io/kubernetes/pkg/scheduler/apis/extender/v1"
-
-// Old: k8sApi "k8s.io/kubernetes/pkg/api"
-// Old: k8sSchedulerApi "k8s.io/kubernetes/plugin/pkg/scheduler/api"
-// Old: metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-// Old: "k8s.io/client-go/kubernetes"
-// Old: "k8s.io/client-go/rest"
-
-var id = 0
-var serviceHash = make(map[string]string)
+	// Service Hash map
+	serviceHash = make(map[string]string)
+)
 
 // initial infrastructure Graph
 var graphLatency = Graph{
@@ -52,9 +46,9 @@ var graphLatency = Graph{
 
 // logNodes prints a line for every candidate node.
 func logNodes(nodes *k8sApi.NodeList) {
-	fmt.Printf("---------------New Scheduling request------------\n")
+	log.Printf("---------------New Scheduling request------------\n")
 	for _, n := range nodes.Items {
-		fmt.Printf("Received node: %v \n", n.Name)
+		log.Printf("Received node: %s \n", n.Name)
 	}
 }
 
@@ -89,14 +83,14 @@ func getDesiredFromLabels(pod *k8sApi.Pod, label string) string {
 // add service Hash
 func addService(key string, node k8sApi.Node) {
 	serviceHash[key] = node.Name
-	fmt.Printf("Service Hash Added: Key %v  - Value %v \n", key, serviceHash[key])
+	log.Printf("Service Hash Added: Key %v  - Value %v \n", key, serviceHash[key])
 }
 
 // selectNode
-func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) {
+func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([]k8sApi.Node, error) {
 
 	if len(nodes.Items) == 0 {
-		return nil, fmt.Errorf("No nodes were provided")
+		return nil, fmt.Errorf("no nodes were provided")
 	}
 
 	// extract information from Pod Template file - label values
@@ -140,37 +134,25 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 	//fmt.Printf("Pod Desired location: %v \n", targetLocation)
 	//
 
-	fmt.Printf("Pod Name: %v \n", pod.Name)
-	fmt.Printf("Pod Desired location: %v \n", targetLocation)
-	fmt.Printf("Pod Desired bandwidth: %v (Mi)\n", podMinBandwith)
-	//fmt.Printf("Pod Desired Device Type: %v \n", deviceType)
-	fmt.Printf("Scheduling Policy: %v \n", policy)
-	fmt.Printf("prevApp: %v \n", prevApp)
-	fmt.Printf("nextApp: %v \n", nextApp)
-	fmt.Printf("Service Chain: %v \n", appList)
-
-	// creates the in-cluster config
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		panic(err.Error())
-	}
-	// creates the client
-	client, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
-	}
+	log.Printf("Pod Name: %v \n", pod.Name)
+	log.Printf("Pod Desired location: %v \n", targetLocation)
+	log.Printf("Pod Desired bandwidth: %v (Mi)\n", podMinBandwith)
+	log.Printf("Scheduling Policy: %v \n", policy)
+	log.Printf("prevApp: %v \n", prevApp)
+	log.Printf("nextApp: %v \n", nextApp)
+	log.Printf("Service Chain: %v \n", appList)
 
 	if policy == "Location" { // If Location Policy enabled
 
-		fmt.Printf("--------------------------------------------------------------\n")
-		fmt.Printf("---------------------Location Policy Selected ------------------\n")
-		fmt.Printf("Target Location: %v \n", targetLocation)
+		log.Printf("--------------------------------------------------------------\n")
+		log.Printf("---------------------Location Policy Selected ------------------\n")
+		log.Printf("Target Location: %v \n", targetLocation)
 
 		minDelay := getMinDelay(nodes, targetLocation)
 		node := locationSelection(nodes, minDelay, targetLocation, podMinBandwith)
 
 		if node.GetName() == "" { // No suitable node found
-			return nil, fmt.Errorf("No suitable node for target Location with enough bandwidth!")
+			return nil, fmt.Errorf("no suitable node for target Location with enough bandwidth")
 		} else {
 			// add pod to Service Hash
 			id++
@@ -182,9 +164,9 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 
 			label := strconv.FormatFloat(value, 'f', 2, 64)
 
-			err = updateBandwidthLabel(label, client, &node, "kubernetes.io/hostname") // &node, "kubernetes.io/hostname")
+			err := updateBandwidthLabel(label, scheduler.clientset, &node, "kubernetes.io/hostname") // &node, "kubernetes.io/hostname")
 			if err != nil {
-				fmt.Printf("Encountered error when updating label: %v", err)
+				log.Printf("encountered error when updating label: %v", err)
 			}
 
 			//updateNodeBandwidth(value, node)
@@ -192,8 +174,8 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 		}
 
 	} else if policy == "Latency" { // If Latency Policy enabled
-		fmt.Printf("---------------------------------------------------------------\n")
-		fmt.Printf("---------------------Latency Policy Selected ------------------\n")
+		log.Printf("---------------------------------------------------------------\n")
+		log.Printf("---------------------Latency Policy Selected ------------------\n")
 
 		// find services belonging to this service chain and put them in a Linked List
 		podList := createPodList(nsh)
@@ -206,10 +188,10 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 						//fmt.Printf("Key: %v \n", key)
 						allocatedNode, ok := serviceHash[key]
 						if ok {
-							fmt.Printf("Key found! Allocated on Node: %v \n", allocatedNode)
+							log.Printf("Key found! Allocated on Node: %v \n", allocatedNode)
 							err := podList.addPod(key, allocatedNode)
 							if err != nil {
-								fmt.Printf("Encountered error when adding Pod to the List: %v", err)
+								log.Printf("encountered error when adding Pod to the List: %v", err)
 							}
 						} //else {
 						//fmt.Printf("Key not found! \n")
@@ -222,13 +204,13 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 		// calculate shortest path for each filtered node
 		// node with min short path is selected
 		if !podList.isEmpty() {
-			fmt.Printf("Pod List is not empty! \n")
-			fmt.Printf("Calculate Delay Cost (Short Paths) and find Best Node! \n")
+			log.Printf("Pod List is not empty! \n")
+			log.Printf("Calculate Delay Cost (Short Paths) and find Best Node! \n")
 			nodeDelay, _ := calculateShortPath(nodes, podList, podMinBandwith)
 
 			if nodeDelay.GetName() != "" {
 				// Return Node Delay
-				fmt.Printf("Node Delay selected! \n")
+				log.Printf("Node Delay selected! \n")
 
 				// add pod to Service Hash
 				id++
@@ -240,25 +222,25 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 
 				label := strconv.FormatFloat(value, 'f', 2, 64)
 
-				err = updateBandwidthLabel(label, client, &nodeDelay, "kubernetes.io/hostname")
+				err := updateBandwidthLabel(label, scheduler.clientset, &nodeDelay, "kubernetes.io/hostname")
 				if err != nil {
-					fmt.Printf("Encountered error when updating label: %v", err)
+					log.Printf("encountered error when updating label: %v", err)
 				}
 
 				//updateNodeBandwidth(value, nodeDelay)
 				return []k8sApi.Node{nodeDelay}, nil
 			}
 		} else {
-			fmt.Printf("Pod List is empty! \n")
-			fmt.Printf("Target Location: %v \n", targetLocation)
+			log.Printf("Pod List is empty! \n")
+			log.Printf("Target Location: %v \n", targetLocation)
 
 			if targetLocation != "Any" { // Location Selection -> Location Policy
-				fmt.Printf("As if Location Policy was selected!! \n")
+				log.Printf("As if Location Policy was selected!! \n")
 				minDelay := getMinDelay(nodes, targetLocation)
 				node := locationSelection(nodes, minDelay, targetLocation, podMinBandwith)
 
 				if node.Name == "" { // No suitable Node found
-					return nil, fmt.Errorf("No suitable node for target Location with enough bandwidth!")
+					return nil, fmt.Errorf("no suitable node for target Location with enough bandwidth")
 				} else {
 					// add pod to Service Hash
 					id++
@@ -270,9 +252,9 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 
 					label := strconv.FormatFloat(value, 'f', 2, 64)
 
-					err = updateBandwidthLabel(label, client, &node, "kubernetes.io/hostname")
+					err := updateBandwidthLabel(label, scheduler.clientset, &node, "kubernetes.io/hostname")
 					if err != nil {
-						fmt.Printf("Encountered error when updating label: %v", err)
+						log.Printf("encountered error when updating label: %v", err)
 					}
 
 					//updateNodeBandwidth(value, node)
@@ -288,7 +270,7 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 	nodeMaxLink, _ := calculateMaxLinkCost(nodes, podMinBandwith)
 
 	if nodeMaxLink.GetName() != "" {
-		fmt.Printf("Node Max Link selected! \n")
+		log.Printf("Node Max Link selected! \n")
 
 		// add pod to Service Hash
 		id++
@@ -300,17 +282,17 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 
 		label := strconv.FormatFloat(value, 'f', 2, 64)
 
-		err = updateBandwidthLabel(label, client, &nodeMaxLink, "kubernetes.io/hostname")
+		err := updateBandwidthLabel(label, scheduler.clientset, &nodeMaxLink, "kubernetes.io/hostname")
 		if err != nil {
-			fmt.Printf("Encountered error when updating label: %v", err)
+			log.Printf("encountered error when updating label: %v", err)
 		}
 
 		//updateNodeBandwidth(value, nodeMaxLink)
 		return []k8sApi.Node{nodeMaxLink}, nil
 	}
 
-	fmt.Printf("---------------------------------------------------------------\n")
-	fmt.Printf("----------------Last Resource: Random Selection ---------------\n")
+	log.Printf("---------------------------------------------------------------\n")
+	log.Printf("----------------Last Resource: Random Selection ---------------\n")
 
 	pick := randomSelection(nodes)
 	// add pod to Service Hash
@@ -327,9 +309,9 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod) ([]k8sApi.Node, error) 
 
 	label := strconv.FormatFloat(value, 'f', 2, 64)
 
-	err = updateBandwidthLabel(label, client, &pick, "kubernetes.io/hostname")
+	err := updateBandwidthLabel(label, scheduler.clientset, &pick, "kubernetes.io/hostname")
 	if err != nil {
-		fmt.Printf("Encountered error when updating label: %v", err)
+		log.Printf("encountered error when updating label: %v", err)
 	}
 
 	//updateNodeBandwidth(value, pick)
@@ -375,18 +357,18 @@ func updateBandwidthLabel(label string, kubeClient kubernetes.Interface, candida
 	nodeLabels := candidateNode.GetLabels()
 	nodeLabels["avBandwidth"] = label
 
-	fmt.Printf("Updating Bandwidth Label: avBandwidth = %v \n", label)
+	log.Printf("Updating Bandwidth Label: avBandwidth = %v \n", label)
 
 	k8sNodeList, err := kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
-		return fmt.Errorf("No nodes were provided")
+		return fmt.Errorf("no nodes were provided")
 	}
 
 	for _, node := range k8sNodeList.Items {
 		if node.Labels[hostnameLabel] == candidateNode.Labels[hostnameLabel] {
 			node.SetLabels(nodeLabels)
 			if _, err = kubeClient.CoreV1().Nodes().Update(&node); err != nil {
-				return fmt.Errorf("Failed to update Label")
+				return fmt.Errorf("failed to update Label")
 			}
 		}
 	}

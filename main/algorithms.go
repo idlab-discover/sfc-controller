@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	k8sApi "k8s.io/api/core/v1"
+	"log"
 	"math"
 	"math/rand"
 	"time"
@@ -27,10 +27,10 @@ func locationSelection(nodes *k8sApi.NodeList, minDelay float64, targetLocation 
 		if minDelay == float64(delay) {
 			nodeBand := getBandwidthValue(&node, "avBandwidth")
 			if podMinBandwith <= nodeBand {
-				fmt.Printf("Selected Node: %v \n", node.Name)
+				log.Printf("Selected Node: %v \n", node.Name)
 				return node
 			} else {
-				fmt.Printf("Remove candidate Node %v , available Bandwidth not enough: %v (Mi)\n", node.Name, nodeBand)
+				log.Printf("Remove candidate Node %s , available Bandwidth not enough: %v (Mi)\n", node.Name, nodeBand)
 				copyItems = append(nodes.Items[:i], nodes.Items[i+1:]...)
 			}
 		}
@@ -41,7 +41,7 @@ func locationSelection(nodes *k8sApi.NodeList, minDelay float64, targetLocation 
 	} else {
 		nodes.Items = copyItems
 		newDelay := getMinDelay(nodes, targetLocation)
-		fmt.Printf("---------------------Recursive Iteration ------------------\n")
+		log.Printf("---------------------Recursive Iteration ------------------\n")
 		return locationSelection(nodes, newDelay, targetLocation, podMinBandwith)
 	}
 }
@@ -56,16 +56,16 @@ func calculateShortPath(nodes *k8sApi.NodeList, podList *podList, podMinBandwidt
 	for _, node := range nodes.Items {
 		nodeBand := getBandwidthValue(&node, "avBandwidth")
 		if podMinBandwidth <= nodeBand {
-			fmt.Printf("Node: %v \n", node.Name)
+			log.Printf("Node: %v \n", node.Name)
 			podList.start()
 			for podList.current != nil {
 				// calculate each shortest path
 				_, cost, _ := graphLatency.Path(node.Name, podList.current.nodeAllocated)
-				fmt.Printf("Current Cost: %v \n", cost)
+				log.Printf("Current Cost: %v \n", cost)
 				previousValue := getValue(delayCost, node.Name)
-				fmt.Printf("Previous Cost: %v \n", previousValue)
+				log.Printf("Previous Cost: %v \n", previousValue)
 				delayCost[node.Name] = previousValue + float64(cost)
-				fmt.Printf("Updated Cost: %v \n", delayCost[node.Name])
+				log.Printf("Updated Cost: %v \n", delayCost[node.Name])
 				podList.next()
 			}
 
@@ -74,10 +74,10 @@ func calculateShortPath(nodes *k8sApi.NodeList, podList *podList, podMinBandwidt
 			if prevCost > minCost {
 				prevCost = minCost
 				selectedNode = node
-				fmt.Printf("Updated min Node (Delay Cost): %v \n", node.Name)
+				log.Printf("Updated min Node (Delay Cost): %v \n", node.Name)
 			}
 		} else {
-			fmt.Printf("Node %v av bandwidth not enough!\n", node.Name)
+			log.Printf("Node %v av bandwidth not enough!\n", node.Name)
 			delayCost[node.Name] = 100000.0
 		}
 	}
@@ -94,12 +94,12 @@ func calculateMaxLinkCost(nodes *k8sApi.NodeList, minBandwidth float64) (k8sApi.
 	for _, node := range nodes.Items {
 
 		linkCost[node.Name] = minBandwidth / getBandwidthValue(&node, "avBandwidth")
-		fmt.Printf("Node: %v - Cost: %v \n", node.Name, linkCost[node.Name])
+		log.Printf("Node: %v - Cost: %v \n", node.Name, linkCost[node.Name])
 
 		if prevCost < linkCost[node.Name] && linkCost[node.Name] <= 1.0 {
 			prevCost = linkCost[node.Name]
 			selectedNode = node
-			fmt.Printf("Updated Max Node (Link Cost): %v \n", node.Name)
+			log.Printf("Updated Max Node (Link Cost): %v \n", node.Name)
 		}
 	}
 	return selectedNode, linkCost
