@@ -19,7 +19,7 @@
 
 REPO = jpedro1992/
 NAME = sfc-controller
-TAG = 0.0.3
+TAG = 0.0.4
 
 build:
 	docker build -t $(REPO)$(NAME):$(TAG) .

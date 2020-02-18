@@ -1,12 +1,246 @@
 package main
 
 import (
+	"fmt"
 	k8sApi "k8s.io/api/core/v1"
 	"log"
 	"math"
 	"math/rand"
+	"strconv"
+	"strings"
 	"time"
 )
+
+// selectNode
+func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([]k8sApi.Node, error) {
+
+	if len(nodes.Items) == 0 {
+		return nil, fmt.Errorf("no nodes were provided")
+	}
+
+	// extract information from Pod Template file - label values
+	appName := getDesiredFromLabels(pod, "app")
+	targetLocation := getDesiredFromLabels(pod, "targetLocation")
+	minBandwidth := getDesiredFromLabels(pod, "minBandwidth")
+	chainPosString := getDesiredFromLabels(pod, "chainPosition")
+	nsh := getDesiredFromLabels(pod, "networkServiceHeader")
+	totalChain := getDesiredFromLabels(pod, "totalChainServ")
+	//deviceType := getDesiredFromLabels(pod, "deviceType")
+	policy := getDesiredFromLabels(pod, "policy")
+
+	minBandwidth = strings.TrimRight(minBandwidth, "Mi")
+	chainPosString = strings.TrimRight(chainPosString, "pos")
+	totalChain = strings.TrimRight(totalChain, "serv")
+
+	podMinBandwith := stringtoFloatBandwidth(minBandwidth)
+	chainPos := stringtoInt(chainPosString)
+	totalChainServ := stringtoInt(totalChain)
+
+	nextApp := ""
+	prevApp := ""
+	var appList []string
+
+	// find next and previous services in the service chain
+	if chainPos == 1 {
+		nextApp = getDesiredFromLabels(pod, "nextService")
+		appList = []string{nextApp}
+	} else if chainPos == totalChainServ {
+		prevApp = getDesiredFromLabels(pod, "prevService")
+		appList = []string{prevApp}
+	} else {
+		prevApp = getDesiredFromLabels(pod, "prevService")
+		nextApp = getDesiredFromLabels(pod, "nextService")
+		appList = []string{prevApp, nextApp}
+	}
+
+	//fmt.Printf("Pod Network Service Header: %v \n", nsh)
+	//fmt.Printf("Pod Chain Position: %v \n", chainPos)
+	//fmt.Printf("Pod Total Chain Services: %v \n", totalChainServ)
+	//fmt.Printf("Pod Desired location: %v \n", targetLocation)
+	//
+
+	log.Printf("Pod Name: %v \n", pod.Name)
+	log.Printf("Pod Desired location: %v \n", targetLocation)
+	log.Printf("Pod Desired bandwidth: %v (Mi)\n", podMinBandwith)
+	log.Printf("Scheduling Policy: %v \n", policy)
+	log.Printf("prevApp: %v \n", prevApp)
+	log.Printf("nextApp: %v \n", nextApp)
+	log.Printf("Service Chain: %v \n", appList)
+
+	if policy == "Location" { // If Location Policy enabled
+
+		log.Printf("--------------------------------------------------------------\n")
+		log.Printf("---------------------Location Policy Selected ------------------\n")
+		log.Printf("Target Location: %v \n", targetLocation)
+
+		minDelay := getMinDelay(nodes, targetLocation)
+		node := locationSelection(nodes, minDelay, targetLocation, podMinBandwith)
+
+		if node.GetName() == "" { // No suitable node found
+			return nil, fmt.Errorf("no suitable node for target Location with enough bandwidth")
+		} else {
+			// add pod to Service Hash
+			id++
+			addService(getKey(id, appName, nsh, chainPos, totalChainServ), node)
+
+			// update Link bandwidth
+			nodeBand := getBandwidthValue(&node, "avBandwidth")
+			value := nodeBand - podMinBandwith
+
+			label := strconv.FormatFloat(value, 'f', 2, 64)
+
+			err := updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, &node)
+			if err != nil {
+				log.Printf("encountered error when updating label: %v", err)
+			}
+
+			return []k8sApi.Node{node}, nil
+		}
+
+	} else if policy == "Latency" { // If Latency Policy enabled
+		log.Printf("---------------------------------------------------------------\n")
+		log.Printf("---------------------Latency Policy Selected ------------------\n")
+
+		// find services belonging to this service chain and put them in a Linked List
+		podList := createPodList(nsh)
+
+		for i := 1; i <= id; i++ {
+			for j := 1; j <= totalChainServ; j++ {
+				for _, app := range appList {
+					if j != chainPos {
+						key := getKey(i, app, nsh, j, totalChainServ)
+						//fmt.Printf("Key: %v \n", key)
+						allocatedNode, ok := serviceHash[key]
+						if ok {
+							log.Printf("Key found! Allocated on Node: %v \n", allocatedNode)
+							err := podList.addPod(key, allocatedNode)
+							if err != nil {
+								log.Printf("encountered error when adding Pod to the List: %v", err)
+							}
+						} //else {
+						//fmt.Printf("Key not found! \n")
+						//}
+					}
+				}
+			}
+		}
+
+		// calculate shortest path for each filtered node
+		// node with min short path is selected
+		if !podList.isEmpty() {
+			log.Printf("Pod List is not empty! \n")
+			log.Printf("Calculate Delay Cost (Short Paths) and find Best Node! \n")
+			nodeDelay, _ := calculateShortPath(nodes, podList, podMinBandwith)
+
+			if nodeDelay.GetName() != "" {
+				// Return Node Delay
+				log.Printf("Node Delay selected! \n")
+
+				// add pod to Service Hash
+				id++
+				addService(getKey(id, appName, nsh, chainPos, totalChainServ), nodeDelay)
+
+				// update Link bandwidth
+				nodeBand := getBandwidthValue(&nodeDelay, "avBandwidth")
+				value := nodeBand - podMinBandwith
+
+				label := strconv.FormatFloat(value, 'f', 2, 64)
+
+				err := updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, &nodeDelay)
+				if err != nil {
+					log.Printf("encountered error when updating label: %v", err)
+				}
+
+				//updateNodeBandwidth(value, nodeDelay)
+				return []k8sApi.Node{nodeDelay}, nil
+			}
+		} else {
+			log.Printf("Pod List is empty! \n")
+			log.Printf("Target Location: %v \n", targetLocation)
+
+			if targetLocation != "Any" { // Location Selection -> Location Policy
+				log.Printf("As if Location Policy was selected!! \n")
+				minDelay := getMinDelay(nodes, targetLocation)
+				node := locationSelection(nodes, minDelay, targetLocation, podMinBandwith)
+
+				if node.Name == "" { // No suitable Node found
+					return nil, fmt.Errorf("no suitable node for target Location with enough bandwidth")
+				} else {
+					// add pod to Service Hash
+					id++
+					addService(getKey(id, appName, nsh, chainPos, totalChainServ), node)
+
+					// update Link bandwidth
+					nodeBand := getBandwidthValue(&node, "avBandwidth")
+					value := nodeBand - podMinBandwith
+
+					label := strconv.FormatFloat(value, 'f', 2, 64)
+
+					err := updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, &node)
+					if err != nil {
+						log.Printf("encountered error when updating label: %v", err)
+					}
+
+					//updateNodeBandwidth(value, node)
+					return []k8sApi.Node{node}, nil
+				}
+			}
+		}
+	}
+	// Link MAX Cost Selection
+	log.Printf("---------------------------------------------------------------\n")
+	log.Printf("---------------------MAX Link Cost Selection-------------------\n")
+	//fmt.Printf("Calculate Max Link Cost!! Higher amount of bandwidth used! \n")
+	nodeMaxLink, _ := calculateMaxLinkCost(nodes, podMinBandwith)
+
+	if nodeMaxLink.GetName() != "" {
+		log.Printf("Node Max Link selected! \n")
+
+		// add pod to Service Hash
+		id++
+		addService(getKey(id, appName, nsh, chainPos, totalChainServ), nodeMaxLink)
+
+		// update Link bandwidth
+		nodeBand := getBandwidthValue(&nodeMaxLink, "avBandwidth")
+		value := nodeBand - podMinBandwith
+
+		label := strconv.FormatFloat(value, 'f', 2, 64)
+
+		err := updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, &nodeMaxLink)
+		if err != nil {
+			log.Printf("encountered error when updating label: %v", err)
+		}
+
+		//updateNodeBandwidth(value, nodeMaxLink)
+		return []k8sApi.Node{nodeMaxLink}, nil
+	}
+
+	log.Printf("---------------------------------------------------------------\n")
+	log.Printf("----------------Last Resource: Random Selection ---------------\n")
+
+	pick := randomSelection(nodes)
+	// add pod to Service Hash
+	id++
+	addService(getKey(id, appName, nsh, chainPos, totalChainServ), pick)
+
+	// update Link bandwidth
+	nodeBand := getBandwidthValue(&pick, "avBandwidth")
+	value := nodeBand - podMinBandwith
+
+	if value < 0 {
+		value = 0.0
+	}
+
+	label := strconv.FormatFloat(value, 'f', 2, 64)
+
+	err := updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, &pick)
+	if err != nil {
+		log.Printf("encountered error when updating label: %v", err)
+	}
+
+	//updateNodeBandwidth(value, pick)
+	return []k8sApi.Node{pick}, nil
+}
 
 // Random Selection: pick a node randomly
 func randomSelection(nodes *k8sApi.NodeList) k8sApi.Node {
@@ -23,7 +257,7 @@ func locationSelection(nodes *k8sApi.NodeList, minDelay float64, targetLocation 
 	copyItems := nodes.Items
 
 	for i, node := range nodes.Items {
-		_, delay, _ := graphLatency.Path(node.Name, targetLocation)
+		delay, _ := graphLatency.getPath(node.Name, targetLocation)
 		if minDelay == float64(delay) {
 			nodeBand := getBandwidthValue(&node, "avBandwidth")
 			if podMinBandwith <= nodeBand {
@@ -60,7 +294,7 @@ func calculateShortPath(nodes *k8sApi.NodeList, podList *podList, podMinBandwidt
 			podList.start()
 			for podList.current != nil {
 				// calculate each shortest path
-				_, cost, _ := graphLatency.Path(node.Name, podList.current.nodeAllocated)
+				cost, _ := graphLatency.getPath(node.Name, podList.current.nodeAllocated)
 				log.Printf("Current Cost: %v \n", cost)
 				previousValue := getValue(delayCost, node.Name)
 				log.Printf("Previous Cost: %v \n", previousValue)
