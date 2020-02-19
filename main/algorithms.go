@@ -81,7 +81,14 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 		} else {
 			// add pod to Service Hash
 			id++
-			addService(getKey(id, appName, nsh, chainPos, totalChainServ), node)
+			key := getKey(id, appName, nsh, chainPos, totalChainServ)
+			addService(key, node)
+
+			//add Service key to Pod Label
+			err := addKeyPodLabel(key, scheduler.clientset, scheduler.podLister, pod)
+			if err != nil {
+				log.Printf("encountered error when updating Service Key label: %v", err)
+			}
 
 			// update Link bandwidth
 			nodeBand := getBandwidthValue(&node, "avBandwidth")
@@ -89,9 +96,9 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 
 			label := strconv.FormatFloat(value, 'f', 2, 64)
 
-			err := updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, &node)
+			err = updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, &node)
 			if err != nil {
-				log.Printf("encountered error when updating label: %v", err)
+				log.Printf("encountered error when updating Bandiwdth label: %v", err)
 			}
 
 			return []k8sApi.Node{node}, nil
@@ -138,7 +145,14 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 
 				// add pod to Service Hash
 				id++
-				addService(getKey(id, appName, nsh, chainPos, totalChainServ), nodeDelay)
+				key := getKey(id, appName, nsh, chainPos, totalChainServ)
+				addService(key, nodeDelay)
+
+				//add Service key to Pod Label
+				err := addKeyPodLabel(key, scheduler.clientset, scheduler.podLister, pod)
+				if err != nil {
+					log.Printf("encountered error when updating Service Key label: %v", err)
+				}
 
 				// update Link bandwidth
 				nodeBand := getBandwidthValue(&nodeDelay, "avBandwidth")
@@ -146,7 +160,7 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 
 				label := strconv.FormatFloat(value, 'f', 2, 64)
 
-				err := updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, &nodeDelay)
+				err = updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, &nodeDelay)
 				if err != nil {
 					log.Printf("encountered error when updating label: %v", err)
 				}
@@ -168,7 +182,14 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 				} else {
 					// add pod to Service Hash
 					id++
-					addService(getKey(id, appName, nsh, chainPos, totalChainServ), node)
+					key := getKey(id, appName, nsh, chainPos, totalChainServ)
+					addService(key, node)
+
+					//add Service key to Pod Label
+					err := addKeyPodLabel(key, scheduler.clientset, scheduler.podLister, pod)
+					if err != nil {
+						log.Printf("encountered error when updating service key label: %v", err)
+					}
 
 					// update Link bandwidth
 					nodeBand := getBandwidthValue(&node, "avBandwidth")
@@ -176,9 +197,9 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 
 					label := strconv.FormatFloat(value, 'f', 2, 64)
 
-					err := updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, &node)
+					err = updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, &node)
 					if err != nil {
-						log.Printf("encountered error when updating label: %v", err)
+						log.Printf("encountered error when updating bandwidth label: %v", err)
 					}
 
 					//updateNodeBandwidth(value, node)
@@ -198,7 +219,14 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 
 		// add pod to Service Hash
 		id++
-		addService(getKey(id, appName, nsh, chainPos, totalChainServ), nodeMaxLink)
+		key := getKey(id, appName, nsh, chainPos, totalChainServ)
+		addService(key, nodeMaxLink)
+
+		//add Service key to Pod Label
+		err := addKeyPodLabel(key, scheduler.clientset, scheduler.podLister, pod)
+		if err != nil {
+			log.Printf("encountered error when updating Service Key label: %v", err)
+		}
 
 		// update Link bandwidth
 		nodeBand := getBandwidthValue(&nodeMaxLink, "avBandwidth")
@@ -206,9 +234,9 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 
 		label := strconv.FormatFloat(value, 'f', 2, 64)
 
-		err := updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, &nodeMaxLink)
+		err = updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, &nodeMaxLink)
 		if err != nil {
-			log.Printf("encountered error when updating label: %v", err)
+			log.Printf("encountered error when updating bandwidth label: %v", err)
 		}
 
 		//updateNodeBandwidth(value, nodeMaxLink)
@@ -221,7 +249,14 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 	pick := randomSelection(nodes)
 	// add pod to Service Hash
 	id++
-	addService(getKey(id, appName, nsh, chainPos, totalChainServ), pick)
+	key := getKey(id, appName, nsh, chainPos, totalChainServ)
+	addService(key, pick)
+
+	//add Service key to Pod Label
+	err := addKeyPodLabel(key, scheduler.clientset, scheduler.podLister, pod)
+	if err != nil {
+		log.Printf("encountered error when updating Service Key label: %v", err)
+	}
 
 	// update Link bandwidth
 	nodeBand := getBandwidthValue(&pick, "avBandwidth")
@@ -233,9 +268,9 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 
 	label := strconv.FormatFloat(value, 'f', 2, 64)
 
-	err := updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, &pick)
+	err = updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, &pick)
 	if err != nil {
-		log.Printf("encountered error when updating label: %v", err)
+		log.Printf("encountered error when updating bandwidth label: %v", err)
 	}
 
 	//updateNodeBandwidth(value, pick)

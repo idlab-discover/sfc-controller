@@ -136,6 +136,27 @@ func updateBandwidthLabel(label string, kubeClient kubernetes.Interface, nodes l
 	*/
 }
 
+func addKeyPodLabel(key string, kubeClient kubernetes.Interface, pods listersv1.PodLister, candidatePod *k8sApi.Pod) error {
+
+	// New: Using Pod Informers - Faster!
+	podLabels := candidatePod.GetLabels()
+	prevLabel := podLabels["serviceKey"]
+	podLabels["serviceKey"] = key
+
+	log.Printf("Updating Service Key Label: previous: %v / now = %v \n", prevLabel, key)
+
+	pod, err := pods.Pods(candidatePod.Namespace).Get(candidatePod.Name)
+	if err != nil {
+		return fmt.Errorf("node could not be found")
+	}
+	pod.SetLabels(podLabels)
+
+	if _, err = kubeClient.CoreV1().Pods(candidatePod.Namespace).Update(pod); err != nil {
+		return fmt.Errorf("failed to update Pod Labels")
+	}
+	return nil
+}
+
 /*
 
 
