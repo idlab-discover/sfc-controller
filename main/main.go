@@ -130,10 +130,6 @@ func initInformers(clientset *kubernetes.Clientset, podQueue chan *k8sApi.Pod, q
 func main() {
 	log.Printf("SFC-controller v0.0.3 Starting...\n")
 
-	// init router
-	svr := &http.Server{Addr: ":" + port}
-	svr.Handler = http.HandlerFunc(handler)
-
 	// configure Logger
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 
@@ -152,20 +148,22 @@ func main() {
 
 	scheduler = NewScheduler(podQueue, quit)
 
-	//log.Printf("Start WatchingPods Routine...\n")
-	//scheduler.Run(quit)
-
 	// start http server
+	svr := &http.Server{Addr: ":" + port}
+	svr.Handler = http.HandlerFunc(handler)
 	log.Printf("Extender Call started on port %v\n", port)
+
 	if err := svr.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("passed...\n")
+	// WatchPods Routine
+	// log.Printf("Start WatchingPods Routine...\n")
+	// scheduler.Run(quit)
 
-	// Create Channel
-	ch := make(chan bool)
-	<-ch
+	// Create Channel: Live forever
+	//ch := make(chan bool)
+	//<-ch
 }
 
 func (scheduler *Scheduler) Run(quit chan struct{}) {
@@ -181,75 +179,27 @@ func (scheduler *Scheduler) watchScheduledPods() {
 	log.Printf("---------------Watching Pods------------\n")
 	log.Printf("Found a pod to check: %v / %v", podScheduled.Namespace, podScheduled.Name)
 
-	//log.Printf("Wait 30 seconds...")
-	//time.Sleep(30 * time.Second)
-	//log.Printf("Check Pod ...")
-
 	pod, err := scheduler.clientset.CoreV1().Pods(podScheduled.Namespace).Get(podScheduled.Name, metav1.GetOptions{})
 	if err != nil {
 		// Pod is not deployed anymore!
 		log.Printf("Check failed: Pod %s is not deployed anymore", podScheduled.Name)
 
-		key := getDesiredFromLabels(podScheduled, "serviceKey")
+		// Remove hash key / update node bandwidth
+		appName := getDesiredFromLabels(podScheduled, "app")
+		chainPosString := getDesiredFromLabels(podScheduled, "chainPosition")
+		nsh := getDesiredFromLabels(podScheduled, "networkServiceHeader")
+		totalChain := getDesiredFromLabels(podScheduled, "totalChainServ")
+		chainPosString = strings.TrimRight(chainPosString, "pos")
+		totalChain = strings.TrimRight(totalChain, "serv")
 
-		// First Time check! Service Key is not updated
-		if key == "Any" || key == "none" {
-			// Remove hash key / update node bandwidth
-			appName := getDesiredFromLabels(podScheduled, "app")
-			chainPosString := getDesiredFromLabels(podScheduled, "chainPosition")
-			nsh := getDesiredFromLabels(podScheduled, "networkServiceHeader")
-			totalChain := getDesiredFromLabels(podScheduled, "totalChainServ")
-			chainPosString = strings.TrimRight(chainPosString, "pos")
-			totalChain = strings.TrimRight(totalChain, "serv")
+		chainPos := stringtoInt(chainPosString)
+		totalChainServ := stringtoInt(totalChain)
 
-			chainPos := stringtoInt(chainPosString)
-			totalChainServ := stringtoInt(totalChain)
+		nodeName := ""
 
-			nodeName := ""
-
-			//Find the correct Service Hash key and remove pod from Service Hash
-			for i := 1; i <= id; i++ {
-				key := getKey(i, appName, nsh, chainPos, totalChainServ)
-
-				allocatedNode, ok := serviceHash[key]
-				if ok {
-					log.Printf("Pod found! Allocated on Node: %v \n", allocatedNode)
-					delete(serviceHash, key)
-					log.Printf("Service Hash removed...")
-					nodeName = allocatedNode
-				}
-			}
-
-			// Get node where the pod was allocated
-			node, err := nodes.Get(nodeName)
-			if err != nil {
-				log.Printf("cannot find node %v", err.Error())
-				return
-			}
-
-			// Get Node current Bandwidth
-			nodeBand := getBandwidthValue(node, "avBandwidth")
-
-			// Get Pod Min Bandwidth Requirement
-			minBandwidth := getDesiredFromLabels(podScheduled, "minBandwidth")
-			minBandwidth = strings.TrimRight(minBandwidth, "Mi")
-			podMinBandwith := stringtoFloatBandwidth(minBandwidth)
-
-			// Update current avBandwidth
-			newValue := nodeBand + podMinBandwith
-			label := strconv.FormatFloat(newValue, 'f', 2, 64)
-
-			err = updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, node)
-			if err != nil {
-				log.Printf("encountered error when updating label after pod verification: %v", err)
-				return
-			}
-
-			log.Printf("Node %v bandwidth updated. Pod %s is not deployed anymore", node.Name, podScheduled.Name)
-			return
-		} else {
-			// Service Key is updated! Faster Routine
-			nodeName := ""
+		//Find the correct Service Hash key and remove pod from Service Hash
+		for i := 1; i <= id; i++ {
+			key := getKey(i, appName, nsh, chainPos, totalChainServ)
 			allocatedNode, ok := serviceHash[key]
 			if ok {
 				log.Printf("Pod found! Allocated on Node: %v \n", allocatedNode)
@@ -257,34 +207,35 @@ func (scheduler *Scheduler) watchScheduledPods() {
 				log.Printf("Service Hash removed...")
 				nodeName = allocatedNode
 			}
+		}
 
-			// Get node where the pod was allocated
-			node, err := nodes.Get(nodeName)
-			if err != nil {
-				log.Printf("cannot find node %v", err.Error())
-				return
-			}
-
-			// Get Node current Bandwidth
-			nodeBand := getBandwidthValue(node, "avBandwidth")
-
-			// Get Pod Min Bandwidth Requirement
-			minBandwidth := getDesiredFromLabels(podScheduled, "minBandwidth")
-			minBandwidth = strings.TrimRight(minBandwidth, "Mi")
-			podMinBandwith := stringtoFloatBandwidth(minBandwidth)
-
-			// Update current avBandwidth
-			newValue := nodeBand + podMinBandwith
-			label := strconv.FormatFloat(newValue, 'f', 2, 64)
-
-			err = updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, node)
-			if err != nil {
-				log.Printf("encountered error when updating label after pod verification: %v", err)
-			}
-
-			log.Printf("Node %v bandwidth updated. Pod %s is not deployed anymore", node.Name, podScheduled.Name)
+		// Get node where the pod was allocated
+		node, err := nodes.Get(nodeName)
+		if err != nil {
+			log.Printf("cannot find node %v", err.Error())
 			return
 		}
+
+		// Get Node current Bandwidth
+		nodeBand := getBandwidthValue(node, "avBandwidth")
+
+		// Get Pod Min Bandwidth Requirement
+		minBandwidth := getDesiredFromLabels(podScheduled, "minBandwidth")
+		minBandwidth = strings.TrimRight(minBandwidth, "Mi")
+		podMinBandwith := stringtoFloatBandwidth(minBandwidth)
+
+		// Update current avBandwidth
+		newValue := nodeBand + podMinBandwith
+		label := strconv.FormatFloat(newValue, 'f', 2, 64)
+
+		err = updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, node)
+		if err != nil {
+			log.Printf("encountered error when updating label after pod verification: %v", err)
+			return
+		}
+
+		log.Printf("Node %v bandwidth updated. Pod %s is not deployed anymore", node.Name, podScheduled.Name)
+		return
 	}
 
 	// Check confirmed

@@ -74,14 +74,6 @@ func getValue(shortPathCost map[string]float64, key string) float64 {
 	return shortPathCost[key]
 }
 
-// Return keys of the given map
-func getAllKeys(serviceHash map[string]string) (keys []string) {
-	for k := range serviceHash {
-		keys = append(keys, k)
-	}
-	return keys
-}
-
 // GetBandwidthValue parses the bandwidth from a node's label or returns
 // the max float value if the label doesn't exist.
 func getBandwidthValue(node *k8sApi.Node, avBandwidth string) float64 {
@@ -136,6 +128,15 @@ func updateBandwidthLabel(label string, kubeClient kubernetes.Interface, nodes l
 	*/
 }
 
+/*
+// Return keys of the given map
+func getAllKeys(serviceHash map[string]string) (keys []string) {
+	for k := range serviceHash {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
 func addKeyPodLabel(key string, kubeClient kubernetes.Interface, pods listersv1.PodLister, candidatePod *k8sApi.Pod) error {
 
 	// New: Using Pod Informers - Faster!
@@ -156,9 +157,6 @@ func addKeyPodLabel(key string, kubeClient kubernetes.Interface, pods listersv1.
 	}
 	return nil
 }
-
-/*
-
 
 // GetMinRTT finds the node with min RTT for the target Location
 func getMinRTT(nodes *k8sApi.NodeList, targetLocation string) float64 {
