@@ -431,7 +431,7 @@ func watchScheduledPods(scheduler Scheduler) {
 				return
 			}
 
-			log.Printf("Node %v bandwidth updated. Pod %s is not deployed anymore", node.Name, allocatedPods.current.name)
+			log.Printf("Bandwidth updated...")
 
 			//remove from list of allocated pods
 			log.Printf("Remove Pod from List...")

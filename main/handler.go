@@ -33,7 +33,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	logNodes(received.Nodes)
 
-	//verify nodes available bandwidth if Pods were already allocated
+	//verify nodes available bandwidth if Pods were already allocated: Trade-off Execution Time vs Better Decisions
 	if !allocatedPods.isEmpty() {
 		log.Printf("Pods were already allocated! Updating available bandwidth...")
 		watchScheduledPods(scheduler)

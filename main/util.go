@@ -94,38 +94,19 @@ func updateBandwidthLabel(label string, kubeClient kubernetes.Interface, nodes l
 	prevLabel := nodeLabels["avBandwidth"]
 	nodeLabels["avBandwidth"] = label
 
-	log.Printf("Updating Bandwidth Label: previous: %v / avBandwidth = %v \n", prevLabel, label)
-
 	node, err := nodes.Get(candidateNode.Name)
 	if err != nil {
 		return fmt.Errorf("node could not be found")
 	}
+
 	node.SetLabels(nodeLabels)
+
+	log.Printf("Node %v Updating Bandwidth Label: previous: %v / avBandwidth = %v \n", node.Name, prevLabel, label)
 
 	if _, err = kubeClient.CoreV1().Nodes().Update(node); err != nil {
 		return fmt.Errorf("failed to update Label")
 	}
 	return nil
-
-	/*
-
-		// Old way: Accessing the Kubernetes API - Slower!
-
-		k8sNodeList, err := kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
-		if err != nil {
-			return fmt.Errorf("no nodes were provided")
-		}
-
-		for _, node := range k8sNodeList.Items {
-			if node.Labels[hostnameLabel] == candidateNode.Labels[hostnameLabel] {
-				node.SetLabels(nodeLabels)
-				if _, err = kubeClient.CoreV1().Nodes().Update(&node); err != nil {
-					return fmt.Errorf("failed to update Label")
-				}
-			}
-		}
-		return nil
-	*/
 }
 
 /*
