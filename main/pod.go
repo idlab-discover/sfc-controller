@@ -1,10 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"log"
+)
 
 //pod structure
 type pod struct {
+	name          string
+	namespace     string
 	key           string
+	minBandwidth  float64
 	nodeAllocated string
 	next          *pod
 }
@@ -24,34 +29,66 @@ func createPodList(name string) *podList {
 }
 
 // addPod() adds an element to the list
-func (p *podList) addPod(key, nodeAllocated string) error {
+func (p *podList) addPod(name string, namespace string, key string, minBandwidth float64, nodeAllocated string) error {
 	s := &pod{
+		name:          name,
+		namespace:     namespace,
+		minBandwidth:  minBandwidth,
 		key:           key,
 		nodeAllocated: nodeAllocated,
 	}
 	if p.head == nil {
 		p.head = s
 	} else {
-		currentNode := p.head
-		for currentNode.next != nil {
-			currentNode = currentNode.next
+		currentPod := p.head
+		for currentPod.next != nil {
+			currentPod = currentPod.next
 		}
-		currentNode.next = s
+		currentPod.next = s
 	}
 	return nil
 }
 
+// removePod() removes a particular element from the list
+func (p *podList) removePod(name string) *podList {
+
+	// List is empty, cannot remove Pod
+	if p.isEmpty() {
+		log.Printf("list is empty")
+	}
+
+	// auxiliary variable
+	temp := p.head
+
+	// If head holds the Pod to be deleted
+	if temp != nil && temp.name == name {
+		p.head = temp.next // Changed head
+		return p
+	}
+
+	// Search for the Pod to be deleted, keep track of the
+	// previous Pod as we need to change temp.next
+	for temp != nil {
+		if temp.next.name == name {
+			temp.next = temp.next.next
+			return p
+		}
+		temp = temp.next
+	}
+	return p
+}
+
 // showAllPods() prints all elements on the list
 func (p *podList) showAllPods() error {
-	currentNode := p.head
-	if currentNode == nil {
-		fmt.Println("PodList is empty.")
+	currentPod := p.head
+	if currentPod == nil {
+		log.Printf("PodList is empty.")
 		return nil
 	}
-	fmt.Printf("%+v\n", *currentNode)
-	for currentNode.next != nil {
-		currentNode = currentNode.next
-		fmt.Printf("%+v\n", *currentNode)
+	log.Printf("%v \n", currentPod.name)
+	for currentPod.next != nil {
+		currentPod = currentPod.next
+		log.Printf("%v \n", currentPod.name)
 	}
 
 	return nil

@@ -33,6 +33,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	logNodes(received.Nodes)
 
+	//verify nodes available bandwidth if Pods were already allocated
+	if !allocatedPods.isEmpty() {
+		log.Printf("Pods were already allocated! Updating available bandwidth...")
+		watchScheduledPods(scheduler)
+	}
+
 	// select the node to schedule on.
 	nodes, err := selectNode(received.Nodes, received.Pod, scheduler)
 	if err != nil {
@@ -49,8 +55,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 
-	log.Printf("Choose Node %v for Pod %v\n", nodes[0].Name, received.Pod.Name)
-	log.Printf("Response Time: %v\n", time.Since(start))
+	log.Printf("Choose Node %v for Pod %v \n", nodes[0].Name, received.Pod.Name)
+	log.Printf("Response Time: %v \n", time.Since(start))
 	log.Printf("---------------------------------------------------------\n")
 	return
 }

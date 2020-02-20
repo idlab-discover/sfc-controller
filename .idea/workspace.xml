@@ -4,7 +4,9 @@
     <list default="true" id="203545ef-e7a5-41db-96d6-18060e91e6dc" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main/algorithms.go" beforeDir="false" afterPath="$PROJECT_DIR$/main/algorithms.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/main/handler.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/pod.go" beforeDir="false" afterPath="$PROJECT_DIR$/main/pod.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main/util.go" beforeDir="false" afterPath="$PROJECT_DIR$/main/util.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -16,40 +18,31 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/main/algorithms.go">
+        <entry file="file://$PROJECT_DIR$/main/main.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
-              <caret line="14" column="101" selection-start-line="14" selection-start-column="101" selection-end-line="14" selection-end-column="101" />
+            <state relative-caret-position="-700">
+              <caret line="99" column="76" lean-forward="true" selection-start-line="99" selection-start-column="76" selection-end-line="99" selection-end-column="76" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/main/pod.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1003">
+              <caret line="59" column="25" selection-start-line="59" selection-start-column="25" selection-end-line="59" selection-end-column="25" />
               <folding>
-                <element signature="e#14#118#0" expanded="true" />
-                <element signature="n#!!block;n#selectNode#0" />
-                <element signature="n#!!block;n#randomSelection#0" />
-                <element signature="n#!!block;n#locationSelection#0" />
-                <element signature="n#!!block;n#calculateShortPath#0" />
-                <element signature="n#!!block;n#calculateMaxLinkCost#0" />
+                <element signature="e#14#31#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/main/main.go">
+        <entry file="file://$PROJECT_DIR$/main/algorithms.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="260">
-              <caret line="168" column="46" lean-forward="true" selection-start-line="168" selection-start-column="46" selection-end-line="168" selection-end-column="46" />
-              <folding>
-                <element signature="e#14#273#0" expanded="true" />
-                <element signature="n#!!block;n#initInformers#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../../pkg/mod/k8s.io/apimachinery@v0.17.0/pkg/util/wait/wait.go">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="264">
-              <caret line="87" column="28" selection-start-line="87" selection-start-column="28" selection-end-line="87" selection-end-column="28" />
+            <state relative-caret-position="473">
+              <caret line="371" column="34" selection-start-line="371" selection-start-column="34" selection-end-line="371" selection-end-column="34" />
             </state>
           </provider>
         </entry>
@@ -57,10 +50,22 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/main/util.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="15" column="4" selection-start-line="15" selection-start-column="4" selection-end-line="15" selection-end-column="69" />
+            <state relative-caret-position="884">
+              <caret line="52" column="53" selection-start-line="52" selection-start-column="53" selection-end-line="52" selection-end-column="53" />
               <folding>
                 <element signature="e#14#212#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/main/handler.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="813">
+              <caret line="57" column="42" selection-start-line="57" selection-start-column="42" selection-end-line="57" selection-end-column="42" />
+              <folding>
+                <element signature="e#14#165#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -79,6 +84,7 @@
     <findStrings>
       <find>NodeList</find>
       <find>Node</find>
+      <find>addPod</find>
     </findStrings>
   </component>
   <component name="GOROOT" path="C:\Go" />
@@ -100,7 +106,6 @@
         <option value="$PROJECT_DIR$/main/algorithms_test.go" />
         <option value="$PROJECT_DIR$/pod.go" />
         <option value="$PROJECT_DIR$/main/test.go" />
-        <option value="$PROJECT_DIR$/main/pod.go" />
         <option value="$PROJECT_DIR$/main/dijkstra.go" />
         <option value="$PROJECT_DIR$/main/dijkstra_test.go" />
         <option value="$PROJECT_DIR$/main/go.mod.go" />
@@ -112,22 +117,23 @@
         <option value="$PROJECT_DIR$/main/Dockerfile" />
         <option value="$PROJECT_DIR$/main/routes.go" />
         <option value="$PROJECT_DIR$/main/predicate.go" />
-        <option value="$PROJECT_DIR$/main/handler.go" />
         <option value="$PROJECT_DIR$/main/util_test.go" />
-        <option value="$PROJECT_DIR$/main/Makefile" />
         <option value="$PROJECT_DIR$/main/node.go" />
         <option value="$PROJECT_DIR$/main/clusterNode.go" />
         <option value="$PROJECT_DIR$/main/Dijkstra.go" />
         <option value="$PROJECT_DIR$/main/graph.go" />
         <option value="$PROJECT_DIR$/main/heap.go" />
+        <option value="$PROJECT_DIR$/main/Makefile" />
+        <option value="$PROJECT_DIR$/main/pod.go" />
         <option value="$PROJECT_DIR$/main/util.go" />
-        <option value="$PROJECT_DIR$/main/algorithms.go" />
         <option value="$PROJECT_DIR$/main/main.go" />
+        <option value="$PROJECT_DIR$/main/handler.go" />
+        <option value="$PROJECT_DIR$/main/algorithms.go" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-25" />
+    <option name="x" value="-179" />
     <option name="y" value="-8" />
     <option name="width" value="1367" />
     <option name="height" value="1056" />
@@ -138,7 +144,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -164,6 +169,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -177,7 +183,7 @@
     <property name="go.gopath.indexing.explicitly.defined" value="true" />
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.vendoring.notification.had.been.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../testing" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -322,10 +328,10 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25692964" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.26492536" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -334,13 +340,13 @@
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.4968017" weight="0.32936078" />
+      <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.49626866" weight="0.32936078" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" weight="0.32936078" />
       <window_info anchor="bottom" id="Database Changes" order="8" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Version Control" order="9" sideWeight="0.5170576" visible="true" weight="0.16576381" />
+      <window_info anchor="bottom" id="Version Control" order="9" sideWeight="0.51492536" visible="true" weight="0.248104" />
       <window_info anchor="bottom" id="Terminal" order="10" sideWeight="0.49840087" weight="0.32394367" />
-      <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.48294243" side_tool="true" visible="true" weight="0.16576381" />
-      <window_info anchor="bottom" id="Messages" order="12" sideWeight="0.4968017" weight="0.39328277" />
+      <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.48507464" side_tool="true" visible="true" weight="0.248104" />
+      <window_info anchor="bottom" id="Messages" order="12" sideWeight="0.49626866" weight="0.39328277" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -408,7 +414,9 @@
     <MESSAGE value="Get bandwidth from node Labels. Update properly" />
     <MESSAGE value="Scheduler Structure created. &#10;Node and Pod Informers added." />
     <MESSAGE value="Several changes on main.go:&#10;&#10;graphLatency calculated on instantiation&#10;watchScheduledPods routine" />
-    <option name="LAST_COMMIT_MESSAGE" value="Several changes on main.go:&#10;&#10;graphLatency calculated on instantiation&#10;watchScheduledPods routine" />
+    <MESSAGE value="Several changes on main.go:&#10;&#10;Log  Lfile added&#10;watchScheduledPods routine" />
+    <MESSAGE value="Without WatchPods routine: still not feasible(concurrency issue)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Without WatchPods routine: still not feasible(concurrency issue)" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
@@ -418,14 +426,6 @@
     <entry file="file://$PROJECT_DIR$/main/go.mod.go" />
     <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor />
-          <second_editor />
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../k8s.io/kubernetes/staging/src/k8s.io/client-go/rest/config.go" />
     <entry file="file://$PROJECT_DIR$/../k8s.io/kubernetes/pkg/scheduler/apis/extender/v1/types.go" />
@@ -533,27 +533,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://C:/Go/src/net/http/server.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="2812" column="19" selection-start-line="2812" selection-start-column="19" selection-end-line="2812" selection-end-column="19" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../../pkg/mod/k8s.io/client-go@v0.17.0/informers/factory.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="209">
           <caret line="96" column="59" selection-start-line="96" selection-start-column="59" selection-end-line="96" selection-end-column="59" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../pkg/mod/k8s.io/client-go@v0.17.0/listers/core/v1/pod.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="251">
-          <caret line="63" column="77" lean-forward="true" selection-start-line="63" selection-start-column="77" selection-end-line="63" selection-end-column="77" />
-          <folding>
-            <element signature="e#625#764#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -575,41 +558,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main/graph.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="530">
-          <caret line="41" column="9" lean-forward="true" selection-start-line="41" selection-start-column="9" selection-end-line="41" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main/Makefile">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="357">
-          <caret line="21" column="11" selection-start-line="21" selection-start-column="11" selection-end-line="21" selection-end-column="11" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main/handler.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="748">
-          <caret line="51" column="66" selection-start-line="51" selection-start-column="66" selection-end-line="51" selection-end-column="66" />
-          <folding>
-            <element signature="e#14#165#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../../pkg/mod/k8s.io/api@v0.17.0/core/v1/types.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="593">
           <caret line="2927" column="16" lean-forward="true" selection-start-line="2927" selection-start-column="16" selection-end-line="2927" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main/pod.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-357">
-          <caret line="15" column="16" lean-forward="true" selection-start-line="15" selection-start-column="16" selection-end-line="15" selection-end-column="16" />
         </state>
       </provider>
     </entry>
@@ -630,16 +582,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main/util.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="15" column="4" selection-start-line="15" selection-start-column="4" selection-end-line="15" selection-end-column="69" />
-          <folding>
-            <element signature="e#14#212#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/Go/src/log/log.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="247">
@@ -649,34 +591,91 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/../../pkg/mod/k8s.io/apimachinery@v0.17.0/pkg/util/wait/wait.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="264">
-          <caret line="87" column="28" selection-start-line="87" selection-start-column="28" selection-end-line="87" selection-end-column="28" />
+        <state relative-caret-position="203">
+          <caret line="86" column="5" selection-start-line="86" selection-start-column="5" selection-end-line="86" selection-end-column="5" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main/algorithms.go">
+    <entry file="file://C:/Go/src/net/http/server.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="14" column="101" selection-start-line="14" selection-start-column="101" selection-end-line="14" selection-end-column="101" />
+        <state relative-caret-position="231">
+          <caret line="2814" column="25" selection-start-line="2814" selection-start-column="25" selection-end-line="2814" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor />
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../pkg/mod/k8s.io/client-go@v0.17.0/listers/core/v1/pod.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="161">
+          <caret line="32" column="6" selection-start-line="32" selection-start-column="6" selection-end-line="32" selection-end-column="6" />
           <folding>
-            <element signature="e#14#118#0" expanded="true" />
-            <element signature="n#!!block;n#selectNode#0" />
-            <element signature="n#!!block;n#randomSelection#0" />
-            <element signature="n#!!block;n#locationSelection#0" />
-            <element signature="n#!!block;n#calculateShortPath#0" />
-            <element signature="n#!!block;n#calculateMaxLinkCost#0" />
+            <element signature="e#625#764#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main/Makefile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="357">
+          <caret line="21" column="11" selection-start-line="21" selection-start-column="11" selection-end-line="21" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main/graph.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="697">
+          <caret line="41" lean-forward="true" selection-start-line="41" selection-end-line="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main/handler.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="813">
+          <caret line="57" column="42" selection-start-line="57" selection-start-column="42" selection-end-line="57" selection-end-column="42" />
+          <folding>
+            <element signature="e#14#165#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main/util.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="884">
+          <caret line="52" column="53" selection-start-line="52" selection-start-column="53" selection-end-line="52" selection-end-column="53" />
+          <folding>
+            <element signature="e#14#212#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/main/main.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="260">
-          <caret line="168" column="46" lean-forward="true" selection-start-line="168" selection-start-column="46" selection-end-line="168" selection-end-column="46" />
+        <state relative-caret-position="-700">
+          <caret line="99" column="76" lean-forward="true" selection-start-line="99" selection-start-column="76" selection-end-line="99" selection-end-column="76" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main/pod.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1003">
+          <caret line="59" column="25" selection-start-line="59" selection-start-column="25" selection-end-line="59" selection-end-column="25" />
           <folding>
-            <element signature="e#14#273#0" expanded="true" />
-            <element signature="n#!!block;n#initInformers#0" />
+            <element signature="e#14#31#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main/algorithms.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="473">
+          <caret line="371" column="34" selection-start-line="371" selection-start-column="34" selection-end-line="371" selection-end-column="34" />
         </state>
       </provider>
     </entry>

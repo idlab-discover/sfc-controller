@@ -50,7 +50,7 @@ func getDesiredFromLabels(pod *k8sApi.Pod, label string) string {
 // add service Hash
 func addService(key string, node k8sApi.Node) {
 	serviceHash[key] = node.Name
-	log.Printf("Service Hash Added: Key %v  - Value %v \n", key, serviceHash[key])
+	log.Printf("Service Hash Added: Key: %v  - Value: %v \n", key, serviceHash[key])
 }
 
 // GetMinDelay for the specified Location

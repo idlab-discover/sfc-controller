@@ -95,6 +95,11 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 				log.Printf("encountered error when updating Bandiwdth label: %v", err)
 			}
 
+			err = allocatedPods.addPod(pod.Name, pod.Namespace, key, podMinBandwith, node.Name)
+			if err != nil {
+				log.Printf("encountered error when adding Pod to the List: %v", err)
+			}
+
 			return []k8sApi.Node{node}, nil
 		}
 
@@ -114,7 +119,7 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 						allocatedNode, ok := serviceHash[key]
 						if ok {
 							log.Printf("Key found! Allocated on Node: %v \n", allocatedNode)
-							err := podList.addPod(key, allocatedNode)
+							err := podList.addPod("pod", "dijkstra", key, 0.0, allocatedNode)
 							if err != nil {
 								log.Printf("encountered error when adding Pod to the List: %v", err)
 							}
@@ -153,6 +158,11 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 					log.Printf("encountered error when updating label: %v", err)
 				}
 
+				err = allocatedPods.addPod(pod.Name, pod.Namespace, key, podMinBandwith, nodeDelay.Name)
+				if err != nil {
+					log.Printf("encountered error when adding Pod to the List: %v", err)
+				}
+
 				//updateNodeBandwidth(value, nodeDelay)
 				return []k8sApi.Node{nodeDelay}, nil
 			}
@@ -184,6 +194,11 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 						log.Printf("encountered error when updating bandwidth label: %v", err)
 					}
 
+					err = allocatedPods.addPod(pod.Name, pod.Namespace, key, podMinBandwith, node.Name)
+					if err != nil {
+						log.Printf("encountered error when adding Pod to the List: %v", err)
+					}
+
 					//updateNodeBandwidth(value, node)
 					return []k8sApi.Node{node}, nil
 				}
@@ -192,7 +207,7 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 	}
 	// Link MAX Cost Selection
 	log.Printf("---------------------------------------------------------------\n")
-	log.Printf("---------------------MAX Link Cost Selection-------------------\n")
+	log.Printf("-------------------- MAX Link Cost Selection ------------------\n")
 	//fmt.Printf("Calculate Max Link Cost!! Higher amount of bandwidth used! \n")
 	nodeMaxLink, _ := calculateMaxLinkCost(nodes, podMinBandwith)
 
@@ -215,12 +230,17 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 			log.Printf("encountered error when updating bandwidth label: %v", err)
 		}
 
+		err = allocatedPods.addPod(pod.Name, pod.Namespace, key, podMinBandwith, nodeMaxLink.Name)
+		if err != nil {
+			log.Printf("encountered error when adding Pod to the List: %v", err)
+		}
+
 		//updateNodeBandwidth(value, nodeMaxLink)
 		return []k8sApi.Node{nodeMaxLink}, nil
 	}
 
 	log.Printf("---------------------------------------------------------------\n")
-	log.Printf("----------------Last Resource: Random Selection ---------------\n")
+	log.Printf("---------------- Last Solution: Random Selection --------------\n")
 
 	pick := randomSelection(nodes)
 	// add pod to Service Hash
@@ -241,6 +261,11 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 	err := updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, &pick)
 	if err != nil {
 		log.Printf("encountered error when updating bandwidth label: %v", err)
+	}
+
+	err = allocatedPods.addPod(pod.Name, pod.Namespace, key, podMinBandwith, pick.Name)
+	if err != nil {
+		log.Printf("encountered error when adding Pod to the List: %v", err)
 	}
 
 	//updateNodeBandwidth(value, pick)
@@ -295,16 +320,16 @@ func calculateShortPath(nodes *k8sApi.NodeList, podList *podList, podMinBandwidt
 	for _, node := range nodes.Items {
 		nodeBand := getBandwidthValue(&node, "avBandwidth")
 		if podMinBandwidth <= nodeBand {
-			log.Printf("Node: %v \n", node.Name)
+			//log.Printf("Node: %v \n", node.Name)
 			podList.start()
 			for podList.current != nil {
 				// calculate each shortest path
 				cost, _ := graphLatency.getPath(node.Name, podList.current.nodeAllocated)
-				log.Printf("Current Cost: %v \n", cost)
+				//log.Printf("Current Cost: %v \n", cost)
 				previousValue := getValue(delayCost, node.Name)
-				log.Printf("Previous Cost: %v \n", previousValue)
+				//log.Printf("Previous Cost: %v \n", previousValue)
 				delayCost[node.Name] = previousValue + float64(cost)
-				log.Printf("Updated Cost: %v \n", delayCost[node.Name])
+				//log.Printf("Updated Cost: %v \n", delayCost[node.Name])
 				podList.next()
 			}
 
@@ -313,10 +338,10 @@ func calculateShortPath(nodes *k8sApi.NodeList, podList *podList, podMinBandwidt
 			if prevCost > minCost {
 				prevCost = minCost
 				selectedNode = node
-				log.Printf("Updated min Node (Delay Cost): %v \n", node.Name)
+				log.Printf("Updated min Node (Delay Cost): %v / %v \n", minCost, node.Name)
 			}
 		} else {
-			log.Printf("Node %v av bandwidth not enough!\n", node.Name)
+			//log.Printf("Node %v av bandwidth not enough!\n", node.Name)
 			delayCost[node.Name] = 100000.0
 		}
 	}
@@ -333,15 +358,100 @@ func calculateMaxLinkCost(nodes *k8sApi.NodeList, minBandwidth float64) (k8sApi.
 	for _, node := range nodes.Items {
 
 		linkCost[node.Name] = minBandwidth / getBandwidthValue(&node, "avBandwidth")
-		log.Printf("Node: %v - Cost: %v \n", node.Name, linkCost[node.Name])
+		//log.Printf("Node: %v - Cost: %v \n", node.Name, linkCost[node.Name])
 
 		if prevCost < linkCost[node.Name] && linkCost[node.Name] <= 1.0 {
 			prevCost = linkCost[node.Name]
 			selectedNode = node
-			log.Printf("Updated Max Node (Link Cost): %v \n", node.Name)
+			log.Printf("Updated Max Node (Link Cost): %v / %v \n", prevCost, node.Name)
 		}
 	}
 	return selectedNode, linkCost
+}
+
+// Verify scheduled Pods: Otherwise free bandwidth
+func watchScheduledPods(scheduler Scheduler) {
+
+	log.Printf("--------------- Watching Pods ------------\n")
+
+	// Update allocatedPods List
+	log.Printf("Initial List: ")
+	err := allocatedPods.showAllPods()
+	if err != nil {
+		log.Printf("encountered error when printing pods: %v", err)
+		return
+	}
+
+	// Check if allocated Pods are still deployed. Otherwise free bandwidth on the correspondent node
+	nodes := scheduler.nodeLister
+	pods := scheduler.podLister
+
+	// Start Checking
+	allocatedPods.start()
+	for allocatedPods.current != nil {
+
+		//log.Printf("Found a pod to check: %v / %v", allocatedPods.current.namespace, allocatedPods.current.name)
+
+		// Using Pod Lister instead of API! Faster Access!
+		podScheduled, err := pods.Pods(allocatedPods.current.namespace).Get(allocatedPods.current.name)
+
+		//podScheduled, err := scheduler.clientset.CoreV1().Pods(allocatedPods.current.namespace).Get(allocatedPods.current.name, metav1.GetOptions{})
+		if err != nil {
+			// Pod is not deployed anymore!
+			log.Printf("Check failed: Pod %s is not deployed anymore", allocatedPods.current.name)
+
+			// Remove hash key / update node bandwidth
+			nodeName := allocatedPods.current.nodeAllocated
+			key := allocatedPods.current.key
+
+			delete(serviceHash, key)
+
+			log.Printf("Service Hash removed...")
+
+			// Get node from node lister
+			node, err := nodes.Get(nodeName)
+			if err != nil {
+				log.Printf("cannot find node %v", err.Error())
+				return
+			}
+
+			// Get Node current Bandwidth
+			nodeBand := getBandwidthValue(node, "avBandwidth")
+
+			// Get Pod Min Bandwidth Requirement from List
+			podMinBandwith := allocatedPods.current.minBandwidth
+
+			// Update current avBandwidth
+			newValue := nodeBand + podMinBandwith
+			label := strconv.FormatFloat(newValue, 'f', 2, 64)
+
+			err = updateBandwidthLabel(label, scheduler.clientset, scheduler.nodeLister, node)
+			if err != nil {
+				log.Printf("encountered error when updating label after pod verification: %v", err)
+				return
+			}
+
+			log.Printf("Node %v bandwidth updated. Pod %s is not deployed anymore", node.Name, allocatedPods.current.name)
+
+			//remove from list of allocated pods
+			log.Printf("Remove Pod from List...")
+			allocatedPods = allocatedPods.removePod(allocatedPods.current.name)
+
+		} else {
+			// Check confirmed
+			log.Printf("Check confirmed: Pod still alocated %s", podScheduled.Name)
+		}
+		allocatedPods.next()
+	}
+
+	log.Printf("Updated List: ")
+	err = allocatedPods.showAllPods()
+	if err != nil {
+		log.Printf("encountered error when printing pods: %v", err)
+		return
+	}
+
+	return
 }
 
 /*
