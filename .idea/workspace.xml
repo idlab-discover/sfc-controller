@@ -2,13 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="203545ef-e7a5-41db-96d6-18060e91e6dc" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/docs/NETSOFT 2019/JoseSantos_NETSOFT2019.pptx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/NOMS 2020/JoseSantos_NOMS2020.pptx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/main/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main/algorithms.go" beforeDir="false" afterPath="$PROJECT_DIR$/main/algorithms.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/main/handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main/pod.go" beforeDir="false" afterPath="$PROJECT_DIR$/main/pod.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main/util.go" beforeDir="false" afterPath="$PROJECT_DIR$/main/util.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,7 +40,7 @@
     <property name="go.gopath.indexing.explicitly.defined" value="true" />
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.vendoring.notification.had.been.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/docs/NOMS 2020" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -57,14 +53,16 @@
     <property name="settings.editor.selected.configurable" value="goland.project.structure" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Administrator\go\src\sfc-controller\docs\NOMS 2020" />
+      <recent name="C:\Users\Administrator\go\src\sfc-controller\docs\NETSOFT 2019" />
+      <recent name="C:\Users\Administrator\go\src\sfc-controller\main" />
+      <recent name="C:\Users\Administrator\go\src\network-aware-scheduler\main" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\Administrator\go\src\sfc-controller\main" />
       <recent name="C:\Users\Administrator\go\src\sfc-controller\deployments" />
       <recent name="C:\Users\Administrator\go\src\sfc-controller" />
-    </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\Administrator\go\src\sfc-controller\main" />
-      <recent name="C:\Users\Administrator\go\src\network-aware-scheduler\main" />
     </key>
   </component>
   <component name="RunManager" selected="Go Test.util_test.go">
@@ -150,7 +148,14 @@
       <option name="project" value="LOCAL" />
       <updated>1588847152265</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="minor comments">
+      <created>1588848351566</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1588848351566</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -205,7 +210,8 @@
     <MESSAGE value="WatchScheduledPods completed:&#10;&#10;check bandwidth available before request! Comes at a cost of execution time, but better decisions!&#10;several changes." />
     <MESSAGE value="minor changes: log.Printf commented" />
     <MESSAGE value="minor updates" />
-    <option name="LAST_COMMIT_MESSAGE" value="minor updates" />
+    <MESSAGE value="minor comments" />
+    <option name="LAST_COMMIT_MESSAGE" value="minor comments" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
@@ -219,11 +225,11 @@
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state x="872" y="361" key="#Options/0.0.2560.1400@0.0.2560.1400" timestamp="1588847474956" />
-    <state x="797" y="159" key="CommitChangelistDialog2" timestamp="1588847151756">
+    <state x="797" y="159" key="CommitChangelistDialog2" timestamp="1588848351087">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state x="-1322" y="118" key="CommitChangelistDialog2/0.0.1920.1040/-1920.0.1920.1040@-1920.0.1920.1040" timestamp="1583496107467" />
-    <state x="797" y="159" key="CommitChangelistDialog2/0.0.2560.1400@0.0.2560.1400" timestamp="1588847151756" />
+    <state x="797" y="159" key="CommitChangelistDialog2/0.0.2560.1400@0.0.2560.1400" timestamp="1588848351087" />
     <state x="943" y="315" width="672" height="678" key="search.everywhere.popup" timestamp="1588847577638">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
