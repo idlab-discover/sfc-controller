@@ -68,7 +68,7 @@ spec:
       serviceAccountName: sfc-controller
       containers:
       - name: sfc-controller
-        image: jpedro1992/sfc-controller:0.0.2
+        image: jpedro1992/sfc-controller:0.0.4
         ports:
         - containerPort: 8100
         imagePullPolicy: Always
