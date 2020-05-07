@@ -29,7 +29,7 @@ var (
 	// Service Hash map
 	serviceHash = make(map[string]string)
 
-	//Infrastructure Locations:
+	//Infrastructure Locations: change locations according to your infrastructure!
 	locations = [5]string{"sw-Bruges", "sw-Antwerp", "sw-Ghent", "sw-Brussels", "sw-Leuven"}
 
 	// Graph Latency - For Dijkstra Short Path Calculation
@@ -62,8 +62,7 @@ func NewScheduler(quit chan struct{}) Scheduler {
 	nodeLister, podLister := initInformers(clientset, quit)
 
 	return Scheduler{
-		clientset: clientset,
-		//podQueue:   podQueue,
+		clientset:  clientset,
 		nodeLister: nodeLister,
 		podLister:  podLister,
 	}
@@ -115,7 +114,6 @@ func initInformers(clientset *kubernetes.Clientset, quit chan struct{}) (listers
 				return
 			} // Listen to all pods related with sfc-controller
 			if pod.Spec.NodeName == "" && pod.Spec.SchedulerName == schedulerName {
-				//podQueue <- pod
 				log.Printf("New Pod Added to Store: %s", pod.Name)
 			}
 		},
@@ -132,16 +130,13 @@ func main() {
 	// The SFC controller is starting
 	log.Printf("SFC-controller v0.0.4 Starting...\n")
 
-	//Add infrastructure Edges to Graph
+	//Add infrastructure Edges to Graph: change weights and locations according to your infrastructure!
 	graphLatency.addEdge("sw-Bruges", "sw-Ghent", 15)
 	graphLatency.addEdge("sw-Antwerp", "sw-Leuven", 15)
 	graphLatency.addEdge("sw-Ghent", "sw-Brussels", 25)
 	graphLatency.addEdge("sw-Brussels", "sw-Leuven", 25)
 
 	//Create Scheduler
-	//podQueue := make(chan *k8sApi.Pod, 300)
-	//defer close(podQueue)
-
 	quit := make(chan struct{})
 	defer close(quit)
 
@@ -155,18 +150,4 @@ func main() {
 	if err := svr.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
-
-	// WatchPods Routine
-	//	// log.Printf("Start WatchingPods Routine...\n")
-	//	// scheduler.Run(quit)
-	//
-	//	// Create Channel: Live forever
-	//	//ch := make(chan bool)
-	//	//<-ch
 }
-
-/*
-func (scheduler *Scheduler) Run(quit chan struct{}) {
-	wait.Until(scheduler.watchScheduledPods, 30*time.Second, quit)
-}
-*/

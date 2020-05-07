@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="203545ef-e7a5-41db-96d6-18060e91e6dc" name="Default Changelist" comment="minor changes: log.Printf commented">
+    <list default="true" id="203545ef-e7a5-41db-96d6-18060e91e6dc" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/main/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/main/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/main/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/algorithms.go" beforeDir="false" afterPath="$PROJECT_DIR$/main/algorithms.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/main/handler.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/pod.go" beforeDir="false" afterPath="$PROJECT_DIR$/main/pod.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/util.go" beforeDir="false" afterPath="$PROJECT_DIR$/main/util.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -17,13 +21,6 @@
         <option value="Go File" />
       </list>
     </option>
-  </component>
-  <component name="FindInProjectRecents">
-    <findStrings>
-      <find>NodeList</find>
-      <find>Node</find>
-      <find>addPod</find>
-    </findStrings>
   </component>
   <component name="GOROOT" path="C:\Go" />
   <component name="Git.Settings">
@@ -146,39 +143,15 @@
       <option name="presentableId" value="Default" />
       <updated>1583495995683</updated>
     </task>
+    <task id="LOCAL-00001" summary="minor updates">
+      <created>1588847152265</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1588847152265</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
-  </component>
-  <component name="TestHistory">
-    <history-entry file="dijkstra_test_go - 2020.02.11 at 10h 39m 19s.xml">
-      <configuration name="dijkstra_test.go" configurationId="GoTestRunConfiguration" />
-    </history-entry>
-    <history-entry file="dijkstra_test_go - 2020.02.11 at 10h 58m 11s.xml">
-      <configuration name="dijkstra_test.go" configurationId="GoTestRunConfiguration" />
-    </history-entry>
-    <history-entry file="dijkstra_test_go - 2020.02.11 at 11h 00m 10s.xml">
-      <configuration name="dijkstra_test.go" configurationId="GoTestRunConfiguration" />
-    </history-entry>
-    <history-entry file="dijkstra_test_go - 2020.02.11 at 11h 00m 47s.xml">
-      <configuration name="dijkstra_test.go" configurationId="GoTestRunConfiguration" />
-    </history-entry>
-    <history-entry file="dijkstra_test_go - 2020.02.11 at 11h 02m 30s.xml">
-      <configuration name="dijkstra_test.go" configurationId="GoTestRunConfiguration" />
-    </history-entry>
-    <history-entry file="dijkstra_test_go - 2020.02.11 at 11h 03m 28s.xml">
-      <configuration name="dijkstra_test.go" configurationId="GoTestRunConfiguration" />
-    </history-entry>
-    <history-entry file="dijkstra_test_go - 2020.02.11 at 11h 05m 09s.xml">
-      <configuration name="dijkstra_test.go" configurationId="GoTestRunConfiguration" />
-    </history-entry>
-    <history-entry file="dijkstra_test_go - 2020.02.11 at 11h 06m 27s.xml">
-      <configuration name="dijkstra_test.go" configurationId="GoTestRunConfiguration" />
-    </history-entry>
-    <history-entry file="dijkstra_test_go - 2020.02.11 at 11h 06m 58s.xml">
-      <configuration name="dijkstra_test.go" configurationId="GoTestRunConfiguration" />
-    </history-entry>
-    <history-entry file="dijkstra_test_go - 2020.02.11 at 11h 09m 15s.xml">
-      <configuration name="dijkstra_test.go" configurationId="GoTestRunConfiguration" />
-    </history-entry>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
@@ -231,7 +204,8 @@
     <MESSAGE value="Without WatchPods routine: still not feasible(concurrency issue)" />
     <MESSAGE value="WatchScheduledPods completed:&#10;&#10;check bandwidth available before request! Comes at a cost of execution time, but better decisions!&#10;several changes." />
     <MESSAGE value="minor changes: log.Printf commented" />
-    <option name="LAST_COMMIT_MESSAGE" value="minor changes: log.Printf commented" />
+    <MESSAGE value="minor updates" />
+    <option name="LAST_COMMIT_MESSAGE" value="minor updates" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
@@ -241,10 +215,19 @@
       <screen x="-1920" y="0" width="1920" height="1040" />
     </state>
     <state x="-1368" y="181" key="#GOPATH/0.0.1920.1040/-1920.0.1920.1040@-1920.0.1920.1040" timestamp="1583496143973" />
-    <state x="-1322" y="118" key="CommitChangelistDialog2" timestamp="1583496107467">
-      <screen x="-1920" y="0" width="1920" height="1040" />
+    <state x="872" y="361" key="#Options" timestamp="1588847474956">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="872" y="361" key="#Options/0.0.2560.1400@0.0.2560.1400" timestamp="1588847474956" />
+    <state x="797" y="159" key="CommitChangelistDialog2" timestamp="1588847151756">
+      <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state x="-1322" y="118" key="CommitChangelistDialog2/0.0.1920.1040/-1920.0.1920.1040@-1920.0.1920.1040" timestamp="1583496107467" />
+    <state x="797" y="159" key="CommitChangelistDialog2/0.0.2560.1400@0.0.2560.1400" timestamp="1588847151756" />
+    <state x="943" y="315" width="672" height="678" key="search.everywhere.popup" timestamp="1588847577638">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="943" y="315" width="672" height="678" key="search.everywhere.popup/0.0.2560.1400@0.0.2560.1400" timestamp="1588847577638" />
   </component>
   <component name="masterDetails">
     <states>

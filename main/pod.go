@@ -14,7 +14,7 @@ type pod struct {
 	next          *pod
 }
 
-//List structure
+// List structure
 type podList struct {
 	name    string
 	head    *pod

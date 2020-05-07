@@ -21,7 +21,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	// check request body.
 	checkBody(w, r)
 
-	// Decode request
+	// decode request
 	start := time.Now()
 	dec := json.NewDecoder(r.Body)
 	received := &k8sSchedulerApi.ExtenderArgs{}
@@ -33,7 +33,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	logNodes(received.Nodes)
 
-	//verify nodes available bandwidth if Pods were already allocated: Trade-off Execution Time vs Better Decisions
+	// verify nodes available bandwidth in case Pods were already allocated: Trade-off Execution Time vs Better Decisions
 	if !allocatedPods.isEmpty() {
 		log.Printf("Pods were already allocated! Updating available bandwidth...")
 		watchScheduledPods(scheduler)

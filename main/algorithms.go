@@ -18,14 +18,13 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 		return nil, fmt.Errorf("no nodes were provided")
 	}
 
-	// extract information from Pod Template file - label values
+	// extract information from Pod - label values
 	appName := getDesiredFromLabels(pod, "app")
 	targetLocation := getDesiredFromLabels(pod, "targetLocation")
 	minBandwidth := getDesiredFromLabels(pod, "minBandwidth")
 	chainPosString := getDesiredFromLabels(pod, "chainPosition")
 	nsh := getDesiredFromLabels(pod, "networkServiceHeader")
 	totalChain := getDesiredFromLabels(pod, "totalChainServ")
-	//deviceType := getDesiredFromLabels(pod, "deviceType")
 	policy := getDesiredFromLabels(pod, "policy")
 
 	minBandwidth = strings.TrimRight(minBandwidth, "Mi")
@@ -52,12 +51,6 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 		nextApp = getDesiredFromLabels(pod, "nextService")
 		appList = []string{prevApp, nextApp}
 	}
-
-	//fmt.Printf("Pod Network Service Header: %v \n", nsh)
-	//fmt.Printf("Pod Chain Position: %v \n", chainPos)
-	//fmt.Printf("Pod Total Chain Services: %v \n", totalChainServ)
-	//fmt.Printf("Pod Desired location: %v \n", targetLocation)
-	//
 
 	log.Printf("Pod Name: %v \n", pod.Name)
 	log.Printf("Pod Desired location: %v \n", targetLocation)
@@ -115,7 +108,6 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 				for _, app := range appList {
 					if j != chainPos {
 						key := getKey(i, app, nsh, j, totalChainServ)
-						//fmt.Printf("Key: %v \n", key)
 						allocatedNode, ok := serviceHash[key]
 						if ok {
 							log.Printf("Key found! Allocated on Node: %v \n", allocatedNode)
@@ -123,9 +115,7 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 							if err != nil {
 								log.Printf("encountered error when adding Pod to the List: %v", err)
 							}
-						} //else {
-						//fmt.Printf("Key not found! \n")
-						//}
+						}
 					}
 				}
 			}
@@ -163,7 +153,6 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 					log.Printf("encountered error when adding Pod to the List: %v", err)
 				}
 
-				//updateNodeBandwidth(value, nodeDelay)
 				return []k8sApi.Node{nodeDelay}, nil
 			}
 		} else {
@@ -199,7 +188,6 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 						log.Printf("encountered error when adding Pod to the List: %v", err)
 					}
 
-					//updateNodeBandwidth(value, node)
 					return []k8sApi.Node{node}, nil
 				}
 			}
@@ -208,7 +196,7 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 	// Link MAX Cost Selection
 	log.Printf("---------------------------------------------------------------\n")
 	log.Printf("-------------------- MAX Link Cost Selection ------------------\n")
-	//fmt.Printf("Calculate Max Link Cost!! Higher amount of bandwidth used! \n")
+
 	nodeMaxLink, _ := calculateMaxLinkCost(nodes, podMinBandwith)
 
 	if nodeMaxLink.GetName() != "" {
@@ -235,7 +223,6 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 			log.Printf("encountered error when adding Pod to the List: %v", err)
 		}
 
-		//updateNodeBandwidth(value, nodeMaxLink)
 		return []k8sApi.Node{nodeMaxLink}, nil
 	}
 
@@ -268,7 +255,6 @@ func selectNode(nodes *k8sApi.NodeList, pod *k8sApi.Pod, scheduler Scheduler) ([
 		log.Printf("encountered error when adding Pod to the List: %v", err)
 	}
 
-	//updateNodeBandwidth(value, pick)
 	return []k8sApi.Node{pick}, nil
 }
 
@@ -395,7 +381,6 @@ func watchScheduledPods(scheduler Scheduler) {
 		// Using Pod Lister instead of API! Faster Access!
 		podScheduled, err := pods.Pods(allocatedPods.current.namespace).Get(allocatedPods.current.name)
 
-		//podScheduled, err := scheduler.clientset.CoreV1().Pods(allocatedPods.current.namespace).Get(allocatedPods.current.name, metav1.GetOptions{})
 		if err != nil {
 			// Pod is not deployed anymore!
 			log.Printf("Check failed: Pod %s is not deployed anymore", allocatedPods.current.name)
@@ -450,160 +435,5 @@ func watchScheduledPods(scheduler Scheduler) {
 		log.Printf("encountered error when printing pods: %v", err)
 		return
 	}
-
 	return
 }
-
-/*
-// min = 0.0
-// max = 10.0
-func normalize(value float64) float64{
-	normalized := (value - 0.0) / (10.0 - 0.0)
-	return normalized
-}
-
-//calculate Location Cost
-func calculateLocationCost(nodes *k8sApi.NodeList, targetLocation string) (k8sApi.Node, map[string]float64) {
-
-	selectedNode := k8sApi.Node{}
-	minCost := math.MaxFloat64
-	prevCost := minCost
-	locationCost := make(map[string]float64)
-
-	for _, node := range nodes.Items {
-
-		fmt.Printf("Calculate Location Cost for Node: %v \n", node.Name)
-
-		_, cost, _ := graphLatency.Path(node.Name, targetLocation)
-		locationCost[node.Name] = float64(cost)
-
-		fmt.Printf("Cost: %v \n", locationCost[node.Name])
-
-		minCost = math.Min(minCost, locationCost[node.Name])
-
-		if prevCost > minCost {
-			prevCost = minCost
-			selectedNode = node
-			fmt.Printf("Updated min Node (Location Cost): %v \n", node.Name)
-		}
-	}
-	return selectedNode, locationCost
-}
-
-//calculate Min Link Cost
-func calculateMinLinkCost(nodes *k8sApi.NodeList, minBandwidth float64) (k8sApi.Node, map[string]float64) {
-
-	selectedNode := k8sApi.Node{}
-	minCost := math.MaxFloat64
-	prevCost := minCost
-	linkCost := make(map[string]float64)
-
-	for _, node := range nodes.Items {
-
-		fmt.Printf("Calculate Link Cost for Node: %v \n", node.Name)
-
-		linkCost[node.Name] = minBandwidth / getNodeBandwidth(node)
-
-		fmt.Printf("Cost: %v \n", linkCost[node.Name])
-
-		minCost = math.Min(minCost, linkCost[node.Name])
-
-		if prevCost > minCost {
-			prevCost = minCost
-			selectedNode = node
-			fmt.Printf("Updated min Node (Link Cost): %v \n", node.Name)
-		}
-	}
-	return selectedNode, linkCost
-}
-
-//calculate balanced score - Resource Cost
-func calculateResourceCost(nodes *k8sApi.NodeList) (k8sApi.Node, map[string]int){
-
-	selectedNode := k8sApi.Node{}
-	minCost := math.MaxFloat64
-	prevCost := minCost
-	resourceCost := make(map[string]int)
-
-	for _, node := range nodes.Items {
-
-		fmt.Printf("Calculate Resource Cost for Node: %v \n", node.Name)
-
-		scoreBalance := balancedResourceScorer(&node)
-		scoreLeast := leastResourceScorer(&node)
-
-		fmt.Printf("ScoreBalance: %v \n", scoreBalance)
-		fmt.Printf("scoreLeast: %v \n", scoreLeast)
-
-		resourceCost[node.Name] = int(float64(scoreBalance) * 0.5 + float64(scoreLeast) * 0.5)
-		minCost = math.Min(minCost, float64(resourceCost[node.Name]))
-
-		if prevCost > minCost {
-			prevCost = minCost
-			selectedNode = node
-			fmt.Printf("Updated min Node (Resource Cost): %v \n", node.Name)
-		}
-	}
-	return selectedNode, resourceCost
-}
-
-func fractionOfCapacity(requested, capacity int64) float64 {
-	if capacity == 0 {
-		return 1
-	}
-	return float64(requested) / float64(capacity)
-}
-
-func balancedResourceScorer(node *k8sApi.Node) int64 {
-
-	requestedCPU, _ := node.Status.Capacity.Cpu().AsInt64()
-	allocatedCPU, _  := node.Status.Allocatable.Cpu().AsInt64()
-	requestedMEM, _ := node.Status.Capacity.Memory().AsInt64()
-	allocatedMEM, _  := node.Status.Allocatable.Memory().AsInt64()
-
-	cpuFraction := fractionOfCapacity(requestedCPU,allocatedCPU)
-	memoryFraction := fractionOfCapacity(requestedMEM, allocatedMEM)
-
-	fmt.Printf("Node: %v \n", node.Name)
-	fmt.Printf("cpu requested: %v \n", node.Status.Capacity.Cpu())
-	fmt.Printf("mem requested: %v \n", node.Status.Capacity.Memory())
-	fmt.Printf("cpu available: %v \n", node.Status.Allocatable.Cpu())
-	fmt.Printf("mem available: %v \n", node.Status.Allocatable.Memory())
-
-	fmt.Printf("cpu fraction: %v \n", cpuFraction)
-	fmt.Printf("mem fraction: %v \n", memoryFraction)
-
-	if cpuFraction >= 1 || memoryFraction >= 1 {
-		// if requested >= capacity, the corresponding host should never be preferred.
-		return 0
-	}
-	// Upper and lower boundary of difference between cpuFraction and memoryFraction are -1 and 1
-	// respectively. Multiplying the absolute value of the difference by 10 scales the value to
-	// 0-10 with 0 representing well balanced allocation and 10 poorly balanced. Subtracting it from
-	// 10 leads to the score which also scales from 0 to 10 while 10 representing well balanced.
-	diff := math.Abs(cpuFraction - memoryFraction)
-	return int64((1 - diff) * float64(10))
-}
-
-func leastResourceScorer(node *k8sApi.Node) int64 {
-
-	requestedCPU, _ := node.Status.Capacity.Cpu().AsInt64()
-	allocatedCPU, _  := node.Status.Allocatable.Cpu().AsInt64()
-	requestedMEM, _ := node.Status.Capacity.Memory().AsInt64()
-	allocatedMEM, _  := node.Status.Allocatable.Memory().AsInt64()
-
-	return (leastRequestedScore(requestedCPU, allocatedCPU) +
-		leastRequestedScore(requestedMEM, allocatedMEM)) / 2
-}
-
-func leastRequestedScore(requested, capacity int64) int64 {
-	if capacity == 0 {
-		return 0
-	}
-	if requested > capacity {
-		return 0
-	}
-
-	return ((capacity - requested) * int64(10)) / capacity
-}
-*/

@@ -21,10 +21,6 @@ ENTRYPOINT ["sfc-controller"]
 
 # Usage:
 
-#docker build -t jpedro1992/sfc-controller:0.0.3 .
-#docker push jpedro1992/sfc-controller:0.0.3
+#docker build -t jpedro1992/sfc-controller:0.0.4 .
+#docker push jpedro1992/sfc-controller:0.0.4
 
-# Old way:
-
-#FROM golang:onbuild
-#EXPOSE 8100
