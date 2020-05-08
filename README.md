@@ -76,13 +76,13 @@ Demo presentation accepted: Live Demonstration of Service Function Chaining allo
 
 ## Team
 
-* [Jose Santos](https://www.researchgate.net/profile/Jose_Santos171)
+* [Jose Santos](https://scholar.google.com/citations?hl=en&user=57EIYWcAAAAJ)
 
-* [Tim Wauters](https://www.researchgate.net/profile/Tim_Wauters)
+* [Tim Wauters](https://scholar.google.com/citations?hl=en&user=Kvxp9iYAAAAJ)
 
-* [Bruno Volckaert](https://www.researchgate.net/profile/Bruno_Volckaert)
+* [Bruno Volckaert](https://scholar.google.com/citations?hl=en&user=NIILGOMAAAAJ)
 
-* [Filip de Turck](https://www.researchgate.net/profile/Filip_De_Turck)
+* [Filip de Turck](https://scholar.google.com/citations?hl=en&user=-HXXnmEAAAAJ)
 
 ## Contact
 
