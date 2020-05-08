@@ -3,6 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="203545ef-e7a5-41db-96d6-18060e91e6dc" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,7 +65,7 @@
       <recent name="C:\Users\Administrator\go\src\sfc-controller" />
     </key>
   </component>
-  <component name="RunManager" selected="Go Test.util_test.go">
+  <component name="RunManager" selected="Go Build.go build sfc-controller/main">
     <configuration name="go build sfc-controller/main" type="GoApplicationRunConfiguration" factoryName="Go Application" nameIsGenerated="true">
       <module name="network-aware-scheduler" />
       <working_directory value="$PROJECT_DIR$/" />
@@ -167,7 +169,14 @@
       <option name="project" value="LOCAL" />
       <updated>1588861830938</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="minor changes">
+      <created>1588863084335</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1588863084335</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -224,7 +233,8 @@
     <MESSAGE value="minor updates" />
     <MESSAGE value="minor comments" />
     <MESSAGE value="Conference Presentations added &#10;README file added" />
-    <option name="LAST_COMMIT_MESSAGE" value="Conference Presentations added &#10;README file added" />
+    <MESSAGE value="minor changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="minor changes" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
@@ -238,11 +248,15 @@
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state x="872" y="361" key="#Options/0.0.2560.1400@0.0.2560.1400" timestamp="1588847474956" />
-    <state x="598" y="118" key="CommitChangelistDialog2" timestamp="1588862899460">
+    <state x="686" y="193" key="#go_build_sfc-controller/main" timestamp="1588931545376">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="686" y="193" key="#go_build_sfc-controller/main/0.0.1920.1040@0.0.1920.1040" timestamp="1588931545376" />
+    <state x="598" y="118" key="CommitChangelistDialog2" timestamp="1588863083634">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="-1322" y="118" key="CommitChangelistDialog2/0.0.1920.1040/-1920.0.1920.1040@-1920.0.1920.1040" timestamp="1583496107467" />
-    <state x="598" y="118" key="CommitChangelistDialog2/0.0.1920.1040@0.0.1920.1040" timestamp="1588862899460" />
+    <state x="598" y="118" key="CommitChangelistDialog2/0.0.1920.1040@0.0.1920.1040" timestamp="1588863083634" />
     <state x="797" y="159" key="CommitChangelistDialog2/0.0.2560.1400@0.0.2560.1400" timestamp="1588848351087" />
     <state x="943" y="315" width="672" height="678" key="search.everywhere.popup" timestamp="1588847577638">
       <screen x="0" y="0" width="2560" height="1400" />

@@ -9,7 +9,8 @@ reducing latency.
 * Please see `main/main.go`. You should change the infrastructure weights/labels based on your own infrastructure before building the container.
 * [Node labels](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/) are used to make allocation decisions based on bandwidth and latency.
 * Besides, our SFC-controller applies the new Kubernetes concepts of [pod and node informers](https://medium.com/@muhammet.arslan/write-your-own-kubernetes-controller-with-informers-9920e8ab6f84)
-
+* If you would like to know further details about our SFC-controller, please read our papers mentioned below. 
+ 
 ## Build the SFC controller
 1. Use the `Makefile` to build your own Docker image. `make build`.
 2. Push the Docker image to a container registry: `make push`.
@@ -67,13 +68,13 @@ If you use our work, please cite our articles.
 }
 ```
 
-* [NETSOFT 2020]()
+* [NETSOFT 2020](https://netsoft2020.ieee-netsoft.org/)
 
 ```
-Demo presentation accepted
+Demo presentation accepted: Live Demonstration of Service Function Chaining allocation in Fog Computing
 ```
 
-## Authors
+## Team
 
 * [Jose Santos](https://www.researchgate.net/profile/Jose_Santos171)
 
@@ -90,3 +91,11 @@ If you want to contribute, please contact:
 Lead developer: [Jose Santos](https://github.com/jpedro1992/)
 
 For questions or support, please use GitHub's issue system.
+
+## License
+
+Copyright (c) 2020 Ghent University and IMEC vzw.
+
+Address: IDLab, Ghent University, iGent Toren, Technologiepark-Zwijnaarde 126 B-9052 Gent, Belgium 
+
+Email: info@imec.be.
