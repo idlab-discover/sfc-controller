@@ -71,8 +71,10 @@ If you use our work, please cite our articles.
 * [NETSOFT 2020](https://netsoft2020.ieee-netsoft.org/)
 
 ```
-Demo presentation accepted: Live Demonstration of Service Function Chaining allocation in Fog Computing
+Demo presentation: Live Demonstration of Service Function Chaining allocation in Fog Computing
 ```
+
+[![](https://j.gifs.com/D1D3Nq.gif)](https://www.youtube.com/watch?v=6aQKjNbSF4k&t=443s)
 
 ## Team
 
