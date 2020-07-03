@@ -25,6 +25,13 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="hiddenUrls">
+      <set>
+        <option value="https://github.com/jpedro1992/sfc-controller.git" />
+      </set>
+    </option>
+  </component>
   <component name="ProjectId" id="1YkoXqUsN5yjiBRkGOAsMaHXDh3" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -206,7 +213,14 @@
       <option name="project" value="LOCAL" />
       <updated>1588933774205</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="README.md updated&#10;Dockerfile updated">
+      <created>1593780578130</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1593780578130</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -266,7 +280,8 @@
     <MESSAGE value="minor changes" />
     <MESSAGE value="License and README.md updated" />
     <MESSAGE value="README.md updated" />
-    <option name="LAST_COMMIT_MESSAGE" value="README.md updated" />
+    <MESSAGE value="README.md updated&#10;Dockerfile updated" />
+    <option name="LAST_COMMIT_MESSAGE" value="README.md updated&#10;Dockerfile updated" />
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
@@ -280,10 +295,10 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="686" y="193" key="#go_build_sfc-controller/main/0.0.1920.1040@0.0.1920.1040" timestamp="1588931545376" />
-    <state x="598" y="118" key="CommitChangelistDialog2" timestamp="1588933773738">
+    <state x="598" y="118" key="CommitChangelistDialog2" timestamp="1593780702389">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="598" y="118" key="CommitChangelistDialog2/0.0.1920.1040@0.0.1920.1040" timestamp="1588933773738" />
+    <state x="598" y="118" key="CommitChangelistDialog2/0.0.1920.1040@0.0.1920.1040" timestamp="1593780702389" />
     <state x="797" y="159" key="CommitChangelistDialog2/0.0.2560.1400@0.0.2560.1400" timestamp="1588848351087" />
     <state x="1060" y="458" key="FileChooserDialogImpl" timestamp="1591689369124">
       <screen x="0" y="0" width="2560" height="1400" />

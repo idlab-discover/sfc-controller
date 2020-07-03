@@ -30,7 +30,7 @@ var (
 	serviceHash = make(map[string]string)
 
 	//Infrastructure Locations: change locations according to your infrastructure!
-	locations = [5]string{"sw-Bruges", "sw-Antwerp", "sw-Ghent", "sw-Brussels", "sw-Leuven"}
+	locations = [4]string{"sw-Bruges", "sw-Antwerp", "sw-Ghent", "sw-Brussels"}
 
 	// Graph Latency - For Dijkstra Short Path Calculation
 	graphLatency = newGraph()
@@ -128,14 +128,14 @@ func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 
 	// The SFC controller is starting
-	log.Printf("SFC-controller v0.0.4 Starting...\n")
+	log.Printf("SFC-controller v0.0.5 Starting...\n")
 
 	//Add infrastructure Edges to Graph: change weights and locations according to your infrastructure!
 	graphLatency.addEdge("sw-Bruges", "sw-Ghent", 15)
-	graphLatency.addEdge("sw-Antwerp", "sw-Leuven", 15)
-	graphLatency.addEdge("sw-Ghent", "sw-Brussels", 25)
-	graphLatency.addEdge("sw-Brussels", "sw-Leuven", 25)
-
+	graphLatency.addEdge("sw-Antwerp", "sw-Ghent", 6)
+	graphLatency.addEdge("sw-Ghent", "sw-Brussels", 12)
+	graphLatency.addEdge("sw-Brussels", "sw-Bruges", 10)
+	graphLatency.addEdge("sw-Bruges", "sw-Antwerp", 10)
 	//Create Scheduler
 	quit := make(chan struct{})
 	defer close(quit)
